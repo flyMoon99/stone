@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # 管理后台前端
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stone-admin
+    ports:
+      - "5174:80"
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:3000}
+    networks:
+      - stone-admin-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  stone-admin-network:
+    driver: bridge

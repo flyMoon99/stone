@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户状态枚举
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// 管理员类型枚举
+enum AdminType {
+  SUPER_ADMIN
+  ADMIN
+}
+
+// 管理员表
+model Admin {
+  id          String    @id @default(cuid())
+  account     String    @unique @db.VarChar(50)
+  password    String    @db.VarChar(255)
+  type        AdminType @default(ADMIN)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  status      UserStatus @default(ACTIVE)
+  lastLoginAt DateTime? @map("last_login_at")
+
+  @@map("admins")
+}
+
+// 会员表
+model Member {
+  id          String    @id @default(cuid())
+  account     String    @unique @db.VarChar(50)
+  password    String    @db.VarChar(255)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  status      UserStatus @default(ACTIVE)
+  lastLoginAt DateTime? @map("last_login_at")
+
+  @@map("members")
+}
+
+// 系统日志表（可选，用于审计）
+model SystemLog {
+  id        String   @id @default(cuid())
+  userId    String?  @map("user_id")
+  userType  String?  @map("user_type") // 'admin' or 'member'
+  action    String   @db.VarChar(100)
+  resource  String?  @db.VarChar(100)
+  details   Json?
+  ip        String?  @db.VarChar(45)
+  userAgent String?  @map("user_agent") @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("system_logs")
+}

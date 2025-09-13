@@ -1,0 +1,323 @@
+/* 重置样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  line-height: 1.6;
+  color: #333;
+  background-color: #f5f7fa;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 通用工具类 */
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+/* 管理后台特定样式 */
+.admin-layout {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-header {
+  height: 60px;
+  background: white;
+  border-bottom: 1px solid #e8e8e8;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  position: relative;
+  z-index: 100;
+}
+
+.admin-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.admin-sidebar {
+  width: 240px;
+  background: white;
+  border-right: 1px solid #e8e8e8;
+  overflow-y: auto;
+  transition: width 0.3s ease;
+}
+
+.admin-sidebar.collapsed {
+  width: 64px;
+}
+
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.admin-tabs {
+  height: 40px;
+  background: white;
+  border-bottom: 1px solid #e8e8e8;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.admin-view {
+  flex: 1;
+  padding: 16px;
+  overflow: auto;
+  background: #f5f7fa;
+}
+
+/* 标签页样式 */
+.tab-item {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  background: #f5f7fa;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  margin-right: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.tab-item:hover {
+  background: #e6f7ff;
+  border-color: #91d5ff;
+}
+
+.tab-item.active {
+  background: #1890ff;
+  color: white;
+  border-color: #1890ff;
+}
+
+.tab-item .tab-title {
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.tab-item .tab-close {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.tab-item .tab-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.tab-item.active .tab-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 卡片样式 */
+.admin-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.admin-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+/* 表格样式 */
+.admin-table {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 表单样式 */
+.admin-form {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.admin-form-item {
+  margin-bottom: 20px;
+}
+
+.admin-form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* 统计卡片 */
+.stat-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.stat-card-title {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.stat-card-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .admin-sidebar {
+    position: fixed;
+    left: -240px;
+    top: 60px;
+    height: calc(100vh - 60px);
+    z-index: 1000;
+    transition: left 0.3s ease;
+  }
+  
+  .admin-sidebar.show {
+    left: 0;
+  }
+  
+  .admin-main {
+    width: 100%;
+  }
+  
+  .admin-view {
+    padding: 12px;
+  }
+  
+  .admin-form {
+    padding: 16px;
+  }
+  
+  .admin-form-actions {
+    flex-direction: column;
+  }
+}
+
+/* 动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-enter-from {
+  transform: translateX(-100%);
+}
+
+.slide-leave-to {
+  transform: translateX(100%);
+}

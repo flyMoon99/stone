@@ -1,0 +1,46 @@
+{
+  "name": "stone-admin",
+  "version": "1.0.0",
+  "description": "Stone项目管理后台服务 - 独立部署版本",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build:shared && vite",
+    "build": "npm run build:shared && vue-tsc && vite build",
+    "build:shared": "cd shared && tsc",
+    "preview": "vite preview",
+    "clean": "rm -rf dist && rm -rf shared/dist",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "lint:fix": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "test": "vitest",
+    "test:unit": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "docker:build": "docker build -t stone-admin .",
+    "docker:run": "docker-compose up -d"
+  },
+  "dependencies": {
+    "@vicons/ionicons5": "^0.12.0",
+    "@vicons/material": "^0.12.0",
+    "axios": "^1.6.5",
+    "echarts": "^5.4.3",
+    "naive-ui": "^2.38.1",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.15",
+    "vue-echarts": "^6.6.8",
+    "vue-router": "^4.2.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.41.1",
+    "@types/node": "^20.11.5",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "@vue/test-utils": "^2.4.6",
+    "@vue/tsconfig": "^0.5.1",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.3.3",
+    "unplugin-auto-import": "^0.17.3",
+    "unplugin-vue-components": "^0.26.0",
+    "vite": "^5.0.11",
+    "vitest": "^1.6.1",
+    "vue-tsc": "^1.8.27"
+  }
+}
