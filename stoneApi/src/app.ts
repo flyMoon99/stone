@@ -14,6 +14,7 @@ import { notFoundHandler } from './middleware/notFoundHandler'
 import adminRoutes from './routes/admin'
 import memberRoutes from './routes/member'
 import publicRoutes from './routes/public'
+import rbacRoutes from './routes/rbac'
 
 // 加载环境变量
 dotenv.config()
@@ -41,6 +42,7 @@ app.get('/health', (req, res) => {
 app.use('/api/admin', adminRoutes)
 app.use('/api/member', memberRoutes)
 app.use('/api/public', publicRoutes)
+app.use('/api/rbac', rbacRoutes)
 
 // 错误处理中间件
 app.use(notFoundHandler)

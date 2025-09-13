@@ -1,0 +1,382 @@
+import { Request, Response, NextFunction } from 'express'
+import { createSuccessResponse, createErrorResponse, HTTP_STATUS } from '@stone/shared'
+import {
+  assignRolesToUser,
+  getUserPermissions,
+  checkUserPermission,
+  checkUserAnyPermission,
+  checkUserAllPermissions,
+  getUserMenuPermissions,
+  getUserRoles,
+  removeUserRole,
+  addUserRole,
+  getUsersByPermission,
+  getUsersByRole,
+  batchAssignRolesToUsers
+} from '../services/userPermissionService'
+import {
+  validateAssignRoles,
+  validateId,
+  validateCheckPermission,
+  validateCheckPermissions,
+  validateAddUserRole,
+  validateBatchAssignRoles
+} from '../utils/validation'
+import { logger } from '../utils/logger'
+
+// 分配角色给用户
+export const assignRolesToUserController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证ID参数
+    const { error: idError, value: idValue } = validateId(req.params)
+    if (idError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(idError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 验证角色分配数据
+    const { error: assignError, value: assignValue } = validateAssignRoles(req.body)
+    if (assignError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(assignError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 分配角色
+    await assignRolesToUser(idValue.id, assignValue.roleIds)
+    
+    res.json(createSuccessResponse(null, 'Roles assigned to user successfully'))
+    return
+  } catch (error) {
+    logger.error('Assign roles to user error:', error)
+    
+    const message = error instanceof Error ? error.message : 'Failed to assign roles'
+    const statusCode = ['用户不存在', '部分角色不存在或已禁用'].includes(message) 
+      ? HTTP_STATUS.BAD_REQUEST 
+      : HTTP_STATUS.INTERNAL_SERVER_ERROR
+    
+    res.status(statusCode).json(createErrorResponse(message, statusCode))
+    return
+  }
+}
+
+// 获取用户权限信息
+export const getUserPermissionsController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证ID参数
+    const { error, value } = validateId(req.params)
+    if (error) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(error.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 获取用户权限
+    const userPermissions = await getUserPermissions(value.id)
+    
+    if (!userPermissions) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json(
+        createErrorResponse('User not found', HTTP_STATUS.NOT_FOUND)
+      )
+    }
+
+    res.json(createSuccessResponse(userPermissions, 'User permissions retrieved successfully'))
+    return
+  } catch (error) {
+    logger.error('Get user permissions error:', error)
+    next(error)
+    return
+  }
+}
+
+// 检查用户权限
+export const checkUserPermissionController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证ID参数
+    const { error: idError, value: idValue } = validateId(req.params)
+    if (idError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(idError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 验证权限检查数据
+    const { error: checkError, value: checkValue } = validateCheckPermission(req.body)
+    if (checkError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(checkError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 检查权限
+    const hasPermission = await checkUserPermission(idValue.id, checkValue.permissionKey)
+    
+    res.json(createSuccessResponse({ hasPermission }, 'Permission check completed'))
+    return
+  } catch (error) {
+    logger.error('Check user permission error:', error)
+    next(error)
+    return
+  }
+}
+
+// 检查用户是否有任意权限
+export const checkUserAnyPermissionController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证ID参数
+    const { error: idError, value: idValue } = validateId(req.params)
+    if (idError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(idError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 验证权限检查数据
+    const { error: checkError, value: checkValue } = validateCheckPermissions(req.body)
+    if (checkError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(checkError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 检查权限
+    const hasAnyPermission = await checkUserAnyPermission(idValue.id, checkValue.permissionKeys)
+    
+    res.json(createSuccessResponse({ hasAnyPermission }, 'Any permission check completed'))
+    return
+  } catch (error) {
+    logger.error('Check user any permission error:', error)
+    next(error)
+    return
+  }
+}
+
+// 检查用户是否有所有权限
+export const checkUserAllPermissionsController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证ID参数
+    const { error: idError, value: idValue } = validateId(req.params)
+    if (idError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(idError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 验证权限检查数据
+    const { error: checkError, value: checkValue } = validateCheckPermissions(req.body)
+    if (checkError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(checkError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 检查权限
+    const hasAllPermissions = await checkUserAllPermissions(idValue.id, checkValue.permissionKeys)
+    
+    res.json(createSuccessResponse({ hasAllPermissions }, 'All permissions check completed'))
+    return
+  } catch (error) {
+    logger.error('Check user all permissions error:', error)
+    next(error)
+    return
+  }
+}
+
+// 获取用户菜单权限
+export const getUserMenuPermissionsController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证ID参数
+    const { error, value } = validateId(req.params)
+    if (error) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(error.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 获取用户菜单权限
+    const menuPermissions = await getUserMenuPermissions(value.id)
+    
+    res.json(createSuccessResponse(menuPermissions, 'User menu permissions retrieved successfully'))
+    return
+  } catch (error) {
+    logger.error('Get user menu permissions error:', error)
+    next(error)
+    return
+  }
+}
+
+// 获取用户角色
+export const getUserRolesController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证ID参数
+    const { error, value } = validateId(req.params)
+    if (error) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(error.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 获取用户角色
+    const roles = await getUserRoles(value.id)
+    
+    res.json(createSuccessResponse(roles, 'User roles retrieved successfully'))
+    return
+  } catch (error) {
+    logger.error('Get user roles error:', error)
+    next(error)
+    return
+  }
+}
+
+// 移除用户角色
+export const removeUserRoleController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证用户ID参数
+    const { error: userIdError, value: userIdValue } = validateId(req.params)
+    if (userIdError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(userIdError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    const { roleId } = req.params
+    if (!roleId) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse('Role ID is required', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 移除用户角色
+    await removeUserRole(userIdValue.id, roleId)
+    
+    res.json(createSuccessResponse(null, 'User role removed successfully'))
+    return
+  } catch (error) {
+    logger.error('Remove user role error:', error)
+    
+    const message = error instanceof Error ? error.message : 'Failed to remove user role'
+    const statusCode = message === '用户角色关联不存在' 
+      ? HTTP_STATUS.BAD_REQUEST 
+      : HTTP_STATUS.INTERNAL_SERVER_ERROR
+    
+    res.status(statusCode).json(createErrorResponse(message, statusCode))
+    return
+  }
+}
+
+// 添加用户角色
+export const addUserRoleController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证用户ID参数
+    const { error: userIdError, value: userIdValue } = validateId(req.params)
+    if (userIdError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(userIdError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 验证角色添加数据
+    const { error: addError, value: addValue } = validateAddUserRole(req.body)
+    if (addError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(addError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 添加用户角色
+    await addUserRole(userIdValue.id, addValue.roleId)
+    
+    res.json(createSuccessResponse(null, 'User role added successfully'))
+    return
+  } catch (error) {
+    logger.error('Add user role error:', error)
+    
+    const message = error instanceof Error ? error.message : 'Failed to add user role'
+    const statusCode = [
+      '用户不存在', 
+      '角色不存在或已禁用', 
+      '用户已拥有此角色'
+    ].includes(message) 
+      ? HTTP_STATUS.BAD_REQUEST 
+      : HTTP_STATUS.INTERNAL_SERVER_ERROR
+    
+    res.status(statusCode).json(createErrorResponse(message, statusCode))
+    return
+  }
+}
+
+// 获取拥有特定权限的用户
+export const getUsersByPermissionController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { permissionKey } = req.params
+    
+    if (!permissionKey) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse('Permission key is required', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 获取拥有权限的用户
+    const users = await getUsersByPermission(permissionKey)
+    
+    res.json(createSuccessResponse(users, 'Users with permission retrieved successfully'))
+    return
+  } catch (error) {
+    logger.error('Get users by permission error:', error)
+    next(error)
+    return
+  }
+}
+
+// 获取拥有特定角色的用户
+export const getUsersByRoleController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { roleCode } = req.params
+    
+    if (!roleCode) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse('Role code is required', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 获取拥有角色的用户
+    const users = await getUsersByRole(roleCode)
+    
+    res.json(createSuccessResponse(users, 'Users with role retrieved successfully'))
+    return
+  } catch (error) {
+    logger.error('Get users by role error:', error)
+    next(error)
+    return
+  }
+}
+
+// 批量分配角色给多个用户
+export const batchAssignRolesToUsersController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证批量分配数据
+    const { error, value } = validateBatchAssignRoles(req.body)
+    if (error) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(error.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 批量分配角色
+    await batchAssignRolesToUsers(value.userIds, value.roleIds)
+    
+    res.json(createSuccessResponse(null, 'Roles assigned to users successfully'))
+    return
+  } catch (error) {
+    logger.error('Batch assign roles to users error:', error)
+    
+    const message = error instanceof Error ? error.message : 'Failed to assign roles'
+    const statusCode = ['部分用户不存在', '部分角色不存在或已禁用'].includes(message) 
+      ? HTTP_STATUS.BAD_REQUEST 
+      : HTTP_STATUS.INTERNAL_SERVER_ERROR
+    
+    res.status(statusCode).json(createErrorResponse(message, statusCode))
+    return
+  }
+}

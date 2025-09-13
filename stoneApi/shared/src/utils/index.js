@@ -100,8 +100,8 @@ function isValidPhone(phone) {
     return phoneRegex.test(phone);
 }
 function hashPassword(password) {
-    if (typeof window !== 'undefined') {
-        return btoa(password);
+    if (typeof globalThis !== 'undefined' && 'btoa' in globalThis) {
+        return globalThis.btoa(password);
     }
     throw new Error('Password hashing not supported in this environment');
 }

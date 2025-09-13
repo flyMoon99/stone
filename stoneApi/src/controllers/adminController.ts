@@ -33,6 +33,7 @@ export const createAdminController = async (req: Request, res: Response, next: N
     res.status(HTTP_STATUS.CREATED).json(
       createSuccessResponse(admin, 'Admin created successfully')
     )
+    return
   } catch (error) {
     logger.error('Create admin error:', error)
     
@@ -40,6 +41,7 @@ export const createAdminController = async (req: Request, res: Response, next: N
     const statusCode = message === 'Account already exists' ? HTTP_STATUS.BAD_REQUEST : HTTP_STATUS.INTERNAL_SERVER_ERROR
     
     res.status(statusCode).json(createErrorResponse(message, statusCode))
+    return
   }
 }
 
@@ -58,9 +60,11 @@ export const getAdminListController = async (req: Request, res: Response, next: 
     const result = await getAdminList(value)
     
     res.json(createSuccessResponse(result, 'Admin list retrieved successfully'))
+    return
   } catch (error) {
     logger.error('Get admin list error:', error)
     next(error)
+    return
   }
 }
 
@@ -85,9 +89,11 @@ export const getAdminByIdController = async (req: Request, res: Response, next: 
     }
 
     res.json(createSuccessResponse(admin, 'Admin retrieved successfully'))
+    return
   } catch (error) {
     logger.error('Get admin error:', error)
     next(error)
+    return
   }
 }
 
@@ -114,6 +120,7 @@ export const updateAdminController = async (req: Request, res: Response, next: N
     const admin = await updateAdmin(idValue.id, updateValue)
     
     res.json(createSuccessResponse(admin, 'Admin updated successfully'))
+    return
   } catch (error) {
     logger.error('Update admin error:', error)
     
@@ -123,6 +130,7 @@ export const updateAdminController = async (req: Request, res: Response, next: N
       : HTTP_STATUS.INTERNAL_SERVER_ERROR
     
     res.status(statusCode).json(createErrorResponse(message, statusCode))
+    return
   }
 }
 
@@ -147,8 +155,10 @@ export const batchUpdateAdminStatusController = async (req: Request, res: Respon
     const count = await batchUpdateAdminStatus(ids, status)
     
     res.json(createSuccessResponse({ count }, `${count} admins status updated successfully`))
+    return
   } catch (error) {
     logger.error('Batch update admin status error:', error)
     next(error)
+    return
   }
 }

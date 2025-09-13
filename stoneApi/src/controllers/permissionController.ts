@@ -1,0 +1,290 @@
+import { Request, Response, NextFunction } from 'express'
+import { createSuccessResponse, createErrorResponse, HTTP_STATUS } from '@stone/shared'
+import {
+  createPermission,
+  getPermissionList,
+  getPermissionTree,
+  getPermissionById,
+  updatePermission,
+  deletePermission,
+  batchUpdatePermissionStatus,
+  getMenuPermissions,
+  getPermissionByKey,
+  getPermissionsByKeys
+} from '../services/permissionService'
+import {
+  validateCreatePermission,
+  validateUpdatePermission,
+  validatePagination,
+  validateId,
+  validatePermissionListQuery,
+  validateBatchUpdateStatus,
+  validatePermissionKeys
+} from '../utils/validation'
+import { logger } from '../utils/logger'
+
+// 创建权限
+export const createPermissionController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证请求数据
+    const { error, value } = validateCreatePermission(req.body)
+    if (error) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(error.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 创建权限
+    const permission = await createPermission(value)
+    
+    res.status(HTTP_STATUS.CREATED).json(
+      createSuccessResponse(permission, 'Permission created successfully')
+    )
+    return
+  } catch (error) {
+    logger.error('Create permission error:', error)
+    
+    const message = error instanceof Error ? error.message : 'Failed to create permission'
+    const statusCode = ['权限标识已存在', '父权限不存在'].includes(message) 
+      ? HTTP_STATUS.BAD_REQUEST 
+      : HTTP_STATUS.INTERNAL_SERVER_ERROR
+    
+    res.status(statusCode).json(createErrorResponse(message, statusCode))
+    return
+  }
+}
+
+// 获取权限列表
+export const getPermissionListController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证查询参数
+    const { error, value } = validatePermissionListQuery(req.query)
+    if (error) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(error.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 获取权限列表
+    const result = await getPermissionList(value)
+    
+    res.json(createSuccessResponse(result, 'Permission list retrieved successfully'))
+    return
+    return
+  } catch (error) {
+    logger.error('Get permission list error:', error)
+    next(error)
+    return
+    return
+  }
+}
+
+// 获取权限树结构
+export const getPermissionTreeController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 获取权限树
+    const tree = await getPermissionTree()
+    
+    res.json(createSuccessResponse(tree, 'Permission tree retrieved successfully'))
+    return
+    return
+  } catch (error) {
+    logger.error('Get permission tree error:', error)
+    next(error)
+    return
+    return
+  }
+}
+
+// 获取权限详情
+export const getPermissionByIdController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证ID参数
+    const { error, value } = validateId(req.params)
+    if (error) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(error.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 获取权限详情
+    const permission = await getPermissionById(value.id)
+    
+    if (!permission) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json(
+        createErrorResponse('Permission not found', HTTP_STATUS.NOT_FOUND)
+      )
+    }
+
+    res.json(createSuccessResponse(permission, 'Permission retrieved successfully'))
+    return
+    return
+  } catch (error) {
+    logger.error('Get permission error:', error)
+    next(error)
+    return
+    return
+  }
+}
+
+// 更新权限
+export const updatePermissionController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证ID参数
+    const { error: idError, value: idValue } = validateId(req.params)
+    if (idError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(idError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 验证更新数据
+    const { error: updateError, value: updateValue } = validateUpdatePermission(req.body)
+    if (updateError) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(updateError.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 更新权限
+    const permission = await updatePermission(idValue.id, updateValue)
+    
+    res.json(createSuccessResponse(permission, 'Permission updated successfully'))
+    return
+    return
+  } catch (error) {
+    logger.error('Update permission error:', error)
+    
+    const message = error instanceof Error ? error.message : 'Failed to update permission'
+    const statusCode = ['权限不存在', '不能设置为自己的子权限作为父权限'].includes(message) 
+      ? HTTP_STATUS.BAD_REQUEST 
+      : HTTP_STATUS.INTERNAL_SERVER_ERROR
+    
+    res.status(statusCode).json(createErrorResponse(message, statusCode))
+    return
+  }
+}
+
+// 删除权限
+export const deletePermissionController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证ID参数
+    const { error, value } = validateId(req.params)
+    if (error) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(error.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 删除权限
+    await deletePermission(value.id)
+    
+    res.json(createSuccessResponse(null, 'Permission deleted successfully'))
+    return
+    return
+  } catch (error) {
+    logger.error('Delete permission error:', error)
+    
+    const message = error instanceof Error ? error.message : 'Failed to delete permission'
+    const statusCode = [
+      '权限不存在', 
+      '该权限下还有子权限，无法删除', 
+      '该权限正在被角色使用，无法删除'
+    ].includes(message) 
+      ? HTTP_STATUS.BAD_REQUEST 
+      : HTTP_STATUS.INTERNAL_SERVER_ERROR
+    
+    res.status(statusCode).json(createErrorResponse(message, statusCode))
+    return
+  }
+}
+
+// 批量更新权限状态
+export const batchUpdatePermissionStatusController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证请求数据
+    const { error, value } = validateBatchUpdateStatus(req.body)
+    if (error) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(error.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 批量更新状态
+    const count = await batchUpdatePermissionStatus(value.ids, value.status)
+    
+    res.json(createSuccessResponse({ count }, `${count} permissions status updated successfully`))
+    return
+  } catch (error) {
+    logger.error('Batch update permission status error:', error)
+    next(error)
+    return
+  }
+}
+
+// 获取菜单权限
+export const getMenuPermissionsController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 获取菜单权限
+    const menuPermissions = await getMenuPermissions()
+    
+    res.json(createSuccessResponse(menuPermissions, 'Menu permissions retrieved successfully'))
+    return
+  } catch (error) {
+    logger.error('Get menu permissions error:', error)
+    next(error)
+    return
+  }
+}
+
+// 根据key获取权限
+export const getPermissionByKeyController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { key } = req.params
+    
+    if (!key) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse('Permission key is required', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 获取权限
+    const permission = await getPermissionByKey(key)
+    
+    if (!permission) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json(
+        createErrorResponse('Permission not found', HTTP_STATUS.NOT_FOUND)
+      )
+    }
+
+    res.json(createSuccessResponse(permission, 'Permission retrieved successfully'))
+    return
+  } catch (error) {
+    logger.error('Get permission by key error:', error)
+    next(error)
+    return
+  }
+}
+
+// 根据keys批量获取权限
+export const getPermissionsByKeysController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // 验证请求数据
+    const { error, value } = validatePermissionKeys(req.body)
+    if (error) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json(
+        createErrorResponse(error.details?.[0]?.message || 'Validation error', HTTP_STATUS.BAD_REQUEST)
+      )
+    }
+
+    // 获取权限
+    const permissions = await getPermissionsByKeys(value.keys)
+    
+    res.json(createSuccessResponse(permissions, 'Permissions retrieved successfully'))
+    return
+  } catch (error) {
+    logger.error('Get permissions by keys error:', error)
+    next(error)
+    return
+  }
+}

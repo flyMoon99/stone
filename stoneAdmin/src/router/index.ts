@@ -67,6 +67,42 @@ const routes = [
           requiresAuth: true,
           keepAlive: true
         }
+      },
+      // 角色管理
+      {
+        path: 'roles',
+        name: 'RoleManagement',
+        component: () => import('@/views/admin/RoleManagement.vue'),
+        meta: {
+          title: '角色管理',
+          requiresAuth: true,
+          requiresSuperAdmin: true,
+          keepAlive: true
+        }
+      },
+      // 权限管理
+      {
+        path: 'permissions',
+        name: 'PermissionManagement',
+        component: () => import('@/views/admin/PermissionManagement.vue'),
+        meta: {
+          title: '权限管理',
+          requiresAuth: true,
+          requiresSuperAdmin: true,
+          keepAlive: true
+        }
+      },
+      // 用户权限分配
+      {
+        path: 'user-permissions',
+        name: 'UserPermissionManagement',
+        component: () => import('@/views/admin/UserPermissionManagement.vue'),
+        meta: {
+          title: '用户权限分配',
+          requiresAuth: true,
+          requiresSuperAdmin: true,
+          keepAlive: true
+        }
       }
     ]
   },

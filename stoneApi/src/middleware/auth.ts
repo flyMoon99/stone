@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { createErrorResponse, HTTP_STATUS, ERROR_CODES, JwtPayload } from '@stone/shared'
 import { verifyAdminToken, verifyMemberToken } from '../utils/jwt'
+import { getUserPermissions } from '../services/userPermissionService'
 import { logger } from '../utils/logger'
 
 // 扩展Request接口以包含用户信息
@@ -10,6 +11,10 @@ declare global {
       user?: JwtPayload
       admin?: JwtPayload
       member?: JwtPayload
+      userPermissions?: {
+        roles: string[]
+        permissions: string[]
+      }
     }
   }
 }
@@ -126,4 +131,125 @@ export const superAdminAuth = async (req: Request, res: Response, next: NextFunc
     
     next()
   })
+}
+
+// 增强的管理员认证中间件（包含权限信息加载）
+export const adminAuthWithPermissions = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = extractToken(req)
+    
+    if (!token) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json(
+        createErrorResponse('Access token is required', HTTP_STATUS.UNAUTHORIZED)
+      )
+    }
+
+    const decoded = verifyAdminToken(token)
+    req.user = decoded
+    req.admin = decoded
+    
+    // 加载用户权限信息
+    try {
+      const userPermissions = await getUserPermissions(decoded.id)
+      if (userPermissions) {
+        req.userPermissions = {
+          roles: userPermissions.roles.map(role => role.code),
+          permissions: userPermissions.permissionKeys
+        }
+      }
+    } catch (permissionError) {
+      logger.warn(`Failed to load permissions for user ${decoded.id}:`, permissionError)
+      // 权限加载失败不影响认证，但会记录警告
+    }
+    
+    logger.debug(`Admin authenticated with permissions: ${decoded.account} (${decoded.id})`)
+    next()
+  } catch (error) {
+    logger.warn(`Admin authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    
+    return res.status(HTTP_STATUS.UNAUTHORIZED).json(
+      createErrorResponse('Invalid or expired token', HTTP_STATUS.UNAUTHORIZED)
+    )
+  }
+}
+
+// RBAC权限检查中间件工厂
+export const requirePermissions = (permissions: string | string[], mode: 'any' | 'all' = 'any') => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    // 确保用户已认证
+    if (!req.admin?.id) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json(
+        createErrorResponse('Authentication required', HTTP_STATUS.UNAUTHORIZED)
+      )
+    }
+
+    // 超级管理员直接通过
+    if (req.admin.type === 'SUPER_ADMIN') {
+      return next()
+    }
+
+    // 检查是否已加载权限信息
+    if (!req.userPermissions) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json(
+        createErrorResponse('User permissions not loaded', HTTP_STATUS.FORBIDDEN)
+      )
+    }
+
+    const requiredPermissions = Array.isArray(permissions) ? permissions : [permissions]
+    const userPermissions = req.userPermissions.permissions
+
+    let hasPermission = false
+    if (mode === 'all') {
+      hasPermission = requiredPermissions.every(perm => userPermissions.includes(perm))
+    } else {
+      hasPermission = requiredPermissions.some(perm => userPermissions.includes(perm))
+    }
+
+    if (!hasPermission) {
+      logger.warn(`Permission denied: ${req.admin.account} - Required: ${requiredPermissions.join(', ')} (${mode})`)
+      return res.status(HTTP_STATUS.FORBIDDEN).json(
+        createErrorResponse('Insufficient permissions', HTTP_STATUS.FORBIDDEN)
+      )
+    }
+
+    next()
+  }
+}
+
+// 角色检查中间件工厂
+export const requireRoles = (roles: string | string[]) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    // 确保用户已认证
+    if (!req.admin?.id) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json(
+        createErrorResponse('Authentication required', HTTP_STATUS.UNAUTHORIZED)
+      )
+    }
+
+    // 超级管理员直接通过
+    if (req.admin.type === 'SUPER_ADMIN') {
+      return next()
+    }
+
+    // 检查是否已加载权限信息
+    if (!req.userPermissions) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json(
+        createErrorResponse('User permissions not loaded', HTTP_STATUS.FORBIDDEN)
+      )
+    }
+
+    const requiredRoles = Array.isArray(roles) ? roles : [roles]
+    const userRoles = req.userPermissions.roles
+
+    const hasRole = requiredRoles.some(role => userRoles.includes(role))
+
+    if (!hasRole) {
+      logger.warn(`Role access denied: ${req.admin.account} - Required roles: ${requiredRoles.join(', ')}`)
+      return res.status(HTTP_STATUS.FORBIDDEN).json(
+        createErrorResponse('Insufficient role permissions', HTTP_STATUS.FORBIDDEN)
+      )
+    }
+
+    next()
+  }
 }

@@ -1,0 +1,815 @@
+{
+  "timestamp": "2025-09-13T18-41-19-383Z",
+  "admins": [
+    {
+      "id": "cmfie58wb00002r1bofbr4glz",
+      "account": "admin",
+      "password": "$2a$10$3N.d6EsTJa/VkkuGbk0yuuWa8ni2K4bTq5EgSo3ra5kgGHHdILB6G",
+      "type": "SUPER_ADMIN",
+      "createdAt": "2025-09-13T14:58:15.755Z",
+      "updatedAt": "2025-09-13T18:23:35.213Z",
+      "status": "ACTIVE",
+      "lastLoginAt": "2025-09-13T17:26:55.408Z"
+    },
+    {
+      "id": "cmfie58ys00012r1b6nnsl2f9",
+      "account": "testadmin",
+      "password": "$2a$10$Nj2M64Xujdt.H.UlyBNDpeWIa1s2wHCxhg/D72KgubMdjtKlMFJ3S",
+      "type": "ADMIN",
+      "createdAt": "2025-09-13T14:58:15.845Z",
+      "updatedAt": "2025-09-13T18:23:35.315Z",
+      "status": "ACTIVE",
+      "lastLoginAt": null
+    },
+    {
+      "id": "cmfikf2sv000qizpj53qf0dei",
+      "account": "usermanager",
+      "password": "$2a$10$1du57dB611oiEQ3lVO2GJunTQ4gQaG9Ad2NlgBw91KWuRCJt5g.4y",
+      "type": "ADMIN",
+      "createdAt": "2025-09-13T17:53:52.112Z",
+      "updatedAt": "2025-09-13T18:23:35.407Z",
+      "status": "ACTIVE",
+      "lastLoginAt": null
+    }
+  ],
+  "roles": [
+    {
+      "id": "cmfiia4l4000312l96godln3s",
+      "name": "超级管理员",
+      "code": "SUPER_ADMIN",
+      "description": "拥有系统所有权限",
+      "status": true,
+      "createdAt": "2025-09-13T16:54:01.912Z",
+      "updatedAt": "2025-09-13T16:54:01.912Z"
+    },
+    {
+      "id": "cmfiia4la000412l9wa8ywmsf",
+      "name": "管理员",
+      "code": "ADMIN",
+      "description": "日常管理权限",
+      "status": true,
+      "createdAt": "2025-09-13T16:54:01.918Z",
+      "updatedAt": "2025-09-13T16:54:01.918Z"
+    },
+    {
+      "id": "cmfiia4ld000512l9xgpk7adx",
+      "name": "运营",
+      "code": "OPERATOR",
+      "description": "运营相关权限",
+      "status": true,
+      "createdAt": "2025-09-13T16:54:01.921Z",
+      "updatedAt": "2025-09-13T16:54:01.921Z"
+    },
+    {
+      "id": "cmfikf2ib0000izpjbuzm7325",
+      "name": "超级管理员",
+      "code": "super_admin",
+      "description": "拥有系统所有权限的超级管理员",
+      "status": true,
+      "createdAt": "2025-09-13T17:53:51.732Z",
+      "updatedAt": "2025-09-13T17:53:51.732Z"
+    },
+    {
+      "id": "cmfikf2ij0001izpjiti5605w",
+      "name": "系统管理员",
+      "code": "admin",
+      "description": "拥有大部分管理权限的系统管理员",
+      "status": true,
+      "createdAt": "2025-09-13T17:53:51.739Z",
+      "updatedAt": "2025-09-13T17:53:51.739Z"
+    },
+    {
+      "id": "cmfikf2il0002izpjlri6unyf",
+      "name": "用户管理员",
+      "code": "user_manager",
+      "description": "负责用户管理的管理员",
+      "status": true,
+      "createdAt": "2025-09-13T17:53:51.741Z",
+      "updatedAt": "2025-09-13T17:53:51.741Z"
+    }
+  ],
+  "permissions": [
+    {
+      "id": "cmfiia4lf000612l9ldcxzlo1",
+      "key": "menu.system",
+      "name": "系统管理",
+      "type": "MENU",
+      "parentId": null,
+      "path": "/system",
+      "method": null,
+      "order": 10,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.923Z",
+      "updatedAt": "2025-09-13T16:54:01.923Z"
+    },
+    {
+      "id": "cmfiia4lj000812l99bf0jatj",
+      "key": "page.system.role",
+      "name": "角色管理",
+      "type": "PAGE",
+      "parentId": "cmfiia4lf000612l9ldcxzlo1",
+      "path": "/system/role",
+      "method": null,
+      "order": 11,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.927Z",
+      "updatedAt": "2025-09-13T16:54:01.927Z"
+    },
+    {
+      "id": "cmfiia4ln000a12l96keoz4rz",
+      "key": "page.system.permission",
+      "name": "权限管理",
+      "type": "PAGE",
+      "parentId": "cmfiia4lf000612l9ldcxzlo1",
+      "path": "/system/permission",
+      "method": null,
+      "order": 12,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.931Z",
+      "updatedAt": "2025-09-13T16:54:01.931Z"
+    },
+    {
+      "id": "cmfiia4lp000c12l9nhphbjbr",
+      "key": "page.system.admin",
+      "name": "管理员管理",
+      "type": "PAGE",
+      "parentId": "cmfiia4lf000612l9ldcxzlo1",
+      "path": "/system/admin",
+      "method": null,
+      "order": 13,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.933Z",
+      "updatedAt": "2025-09-13T16:54:01.933Z"
+    },
+    {
+      "id": "cmfiia4ls000e12l9eh8spxil",
+      "key": "system.role.read",
+      "name": "查看角色",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.937Z",
+      "updatedAt": "2025-09-13T16:54:01.937Z"
+    },
+    {
+      "id": "cmfiia4lw000g12l9pmfwu3nc",
+      "key": "system.role.create",
+      "name": "创建角色",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.940Z",
+      "updatedAt": "2025-09-13T16:54:01.940Z"
+    },
+    {
+      "id": "cmfiia4ly000i12l94qts59yw",
+      "key": "system.role.update",
+      "name": "更新角色",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.942Z",
+      "updatedAt": "2025-09-13T16:54:01.942Z"
+    },
+    {
+      "id": "cmfiia4m1000k12l9icdg1poc",
+      "key": "system.role.delete",
+      "name": "删除角色",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.945Z",
+      "updatedAt": "2025-09-13T16:54:01.945Z"
+    },
+    {
+      "id": "cmfiia4m3000m12l9uwpgtp3c",
+      "key": "system.role.grant",
+      "name": "角色授权",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.947Z",
+      "updatedAt": "2025-09-13T16:54:01.947Z"
+    },
+    {
+      "id": "cmfiia4m5000o12l9lcwp3pdr",
+      "key": "system.permission.read",
+      "name": "查看权限",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.949Z",
+      "updatedAt": "2025-09-13T16:54:01.949Z"
+    },
+    {
+      "id": "cmfiia4m7000q12l9ibzjgt8x",
+      "key": "system.permission.create",
+      "name": "创建权限",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.952Z",
+      "updatedAt": "2025-09-13T16:54:01.952Z"
+    },
+    {
+      "id": "cmfiia4ma000s12l9qi6qhs53",
+      "key": "system.permission.update",
+      "name": "更新权限",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.954Z",
+      "updatedAt": "2025-09-13T16:54:01.954Z"
+    },
+    {
+      "id": "cmfiia4mc000u12l96hxgadqm",
+      "key": "system.permission.delete",
+      "name": "删除权限",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.956Z",
+      "updatedAt": "2025-09-13T16:54:01.956Z"
+    },
+    {
+      "id": "cmfiia4md000w12l919eabim3",
+      "key": "system.admin.read",
+      "name": "查看管理员",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.958Z",
+      "updatedAt": "2025-09-13T16:54:01.958Z"
+    },
+    {
+      "id": "cmfiia4mg000y12l94tukx7v8",
+      "key": "system.admin.create",
+      "name": "创建管理员",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.960Z",
+      "updatedAt": "2025-09-13T16:54:01.960Z"
+    },
+    {
+      "id": "cmfiia4mh001012l9mkxvcw5i",
+      "key": "system.admin.update",
+      "name": "更新管理员",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.962Z",
+      "updatedAt": "2025-09-13T16:54:01.962Z"
+    },
+    {
+      "id": "cmfiia4mj001212l9e1adoavc",
+      "key": "system.admin.delete",
+      "name": "删除管理员",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.964Z",
+      "updatedAt": "2025-09-13T16:54:01.964Z"
+    },
+    {
+      "id": "cmfiia4ml001412l973d76wdu",
+      "key": "system.admin.grant",
+      "name": "管理员授权",
+      "type": "ACTION",
+      "parentId": "cmfiia4lj000812l99bf0jatj",
+      "path": null,
+      "method": null,
+      "order": 0,
+      "enabled": true,
+      "createdAt": "2025-09-13T16:54:01.965Z",
+      "updatedAt": "2025-09-13T16:54:01.965Z"
+    },
+    {
+      "id": "cmfikf2in0003izpjddedk82l",
+      "key": "system",
+      "name": "系统管理",
+      "type": "MENU",
+      "parentId": null,
+      "path": null,
+      "method": null,
+      "order": 1,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.743Z",
+      "updatedAt": "2025-09-13T17:53:51.743Z"
+    },
+    {
+      "id": "cmfikf2it0005izpjklapfom6",
+      "key": "system.config",
+      "name": "系统配置",
+      "type": "PAGE",
+      "parentId": "cmfikf2in0003izpjddedk82l",
+      "path": null,
+      "method": null,
+      "order": 1,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.749Z",
+      "updatedAt": "2025-09-13T17:53:51.749Z"
+    },
+    {
+      "id": "cmfikf2ix0006izpjmia20jnh",
+      "key": "user",
+      "name": "用户管理",
+      "type": "MENU",
+      "parentId": null,
+      "path": null,
+      "method": null,
+      "order": 2,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.754Z",
+      "updatedAt": "2025-09-13T17:53:51.754Z"
+    },
+    {
+      "id": "cmfikf2iz0008izpj5b01n2hz",
+      "key": "user.list",
+      "name": "用户列表",
+      "type": "PAGE",
+      "parentId": "cmfikf2ix0006izpjmia20jnh",
+      "path": "/admin/users",
+      "method": null,
+      "order": 1,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.755Z",
+      "updatedAt": "2025-09-13T17:53:51.755Z"
+    },
+    {
+      "id": "cmfikf2j1000aizpjrnaqelme",
+      "key": "user.create",
+      "name": "创建用户",
+      "type": "ACTION",
+      "parentId": "cmfikf2iz0008izpj5b01n2hz",
+      "path": null,
+      "method": null,
+      "order": 1,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.757Z",
+      "updatedAt": "2025-09-13T17:53:51.757Z"
+    },
+    {
+      "id": "cmfikf2j3000cizpjk8paeue2",
+      "key": "user.update",
+      "name": "编辑用户",
+      "type": "ACTION",
+      "parentId": "cmfikf2iz0008izpj5b01n2hz",
+      "path": null,
+      "method": null,
+      "order": 2,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.759Z",
+      "updatedAt": "2025-09-13T17:53:51.759Z"
+    },
+    {
+      "id": "cmfikf2j4000eizpj1ucpxj2h",
+      "key": "user.delete",
+      "name": "删除用户",
+      "type": "ACTION",
+      "parentId": "cmfikf2iz0008izpj5b01n2hz",
+      "path": null,
+      "method": null,
+      "order": 3,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.761Z",
+      "updatedAt": "2025-09-13T17:53:51.761Z"
+    },
+    {
+      "id": "cmfikf2j6000fizpj1we32o73",
+      "key": "role",
+      "name": "角色管理",
+      "type": "MENU",
+      "parentId": null,
+      "path": null,
+      "method": null,
+      "order": 3,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.762Z",
+      "updatedAt": "2025-09-13T17:53:51.762Z"
+    },
+    {
+      "id": "cmfikf2j7000hizpjcuqn42qi",
+      "key": "role.list",
+      "name": "角色列表",
+      "type": "PAGE",
+      "parentId": "cmfikf2j6000fizpj1we32o73",
+      "path": "/admin/roles",
+      "method": null,
+      "order": 1,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.764Z",
+      "updatedAt": "2025-09-13T17:53:51.764Z"
+    },
+    {
+      "id": "cmfikf2j9000jizpjcp86wbz6",
+      "key": "role.create",
+      "name": "创建角色",
+      "type": "ACTION",
+      "parentId": "cmfikf2j7000hizpjcuqn42qi",
+      "path": null,
+      "method": null,
+      "order": 1,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.766Z",
+      "updatedAt": "2025-09-13T17:53:51.766Z"
+    },
+    {
+      "id": "cmfikf2jb000lizpjx0ihff4a",
+      "key": "role.update",
+      "name": "编辑角色",
+      "type": "ACTION",
+      "parentId": "cmfikf2j7000hizpjcuqn42qi",
+      "path": null,
+      "method": null,
+      "order": 2,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.767Z",
+      "updatedAt": "2025-09-13T17:53:51.767Z"
+    },
+    {
+      "id": "cmfikf2jd000nizpjmc7mldk8",
+      "key": "role.delete",
+      "name": "删除角色",
+      "type": "ACTION",
+      "parentId": "cmfikf2j7000hizpjcuqn42qi",
+      "path": null,
+      "method": null,
+      "order": 3,
+      "enabled": true,
+      "createdAt": "2025-09-13T17:53:51.769Z",
+      "updatedAt": "2025-09-13T17:53:51.769Z"
+    }
+  ],
+  "adminRoles": [
+    {
+      "adminId": "cmfie58wb00002r1bofbr4glz",
+      "roleId": "cmfiia4l4000312l96godln3s"
+    },
+    {
+      "adminId": "cmfie58wb00002r1bofbr4glz",
+      "roleId": "cmfikf2ib0000izpjbuzm7325"
+    },
+    {
+      "adminId": "cmfie58ys00012r1b6nnsl2f9",
+      "roleId": "cmfikf2ij0001izpjiti5605w"
+    },
+    {
+      "adminId": "cmfikf2sv000qizpj53qf0dei",
+      "roleId": "cmfikf2il0002izpjlri6unyf"
+    }
+  ],
+  "rolePermissions": [
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4ls000e12l9eh8spxil"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4m7000q12l9ibzjgt8x"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4mc000u12l96hxgadqm"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4lw000g12l9pmfwu3nc"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4ly000i12l94qts59yw"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4md000w12l919eabim3"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4m5000o12l9lcwp3pdr"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4m1000k12l9icdg1poc"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4m3000m12l9uwpgtp3c"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4mg000y12l94tukx7v8"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4mj001212l9e1adoavc"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4ml001412l973d76wdu"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4mh001012l9mkxvcw5i"
+    },
+    {
+      "roleId": "cmfiia4l4000312l96godln3s",
+      "permissionId": "cmfiia4ma000s12l9qi6qhs53"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4lf000612l9ldcxzlo1"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4lj000812l99bf0jatj"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4ln000a12l96keoz4rz"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4lp000c12l9nhphbjbr"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4ls000e12l9eh8spxil"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4lw000g12l9pmfwu3nc"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4ly000i12l94qts59yw"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4m1000k12l9icdg1poc"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4m3000m12l9uwpgtp3c"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4m5000o12l9lcwp3pdr"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4m7000q12l9ibzjgt8x"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4ma000s12l9qi6qhs53"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4mc000u12l96hxgadqm"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4md000w12l919eabim3"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4mg000y12l94tukx7v8"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4mh001012l9mkxvcw5i"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4mj001212l9e1adoavc"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfiia4ml001412l973d76wdu"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2in0003izpjddedk82l"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2it0005izpjklapfom6"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2ix0006izpjmia20jnh"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2iz0008izpj5b01n2hz"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2j1000aizpjrnaqelme"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2j3000cizpjk8paeue2"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2j4000eizpj1ucpxj2h"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2j6000fizpj1we32o73"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2j7000hizpjcuqn42qi"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2j9000jizpjcp86wbz6"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2jb000lizpjx0ihff4a"
+    },
+    {
+      "roleId": "cmfikf2ib0000izpjbuzm7325",
+      "permissionId": "cmfikf2jd000nizpjmc7mldk8"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4lf000612l9ldcxzlo1"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4lj000812l99bf0jatj"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4ln000a12l96keoz4rz"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4lp000c12l9nhphbjbr"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4ls000e12l9eh8spxil"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4lw000g12l9pmfwu3nc"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4ly000i12l94qts59yw"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4m1000k12l9icdg1poc"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4m3000m12l9uwpgtp3c"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4m5000o12l9lcwp3pdr"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4m7000q12l9ibzjgt8x"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4ma000s12l9qi6qhs53"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4mc000u12l96hxgadqm"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4md000w12l919eabim3"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4mg000y12l94tukx7v8"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4mh001012l9mkxvcw5i"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4mj001212l9e1adoavc"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfiia4ml001412l973d76wdu"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfikf2in0003izpjddedk82l"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfikf2ix0006izpjmia20jnh"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfikf2iz0008izpj5b01n2hz"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfikf2j1000aizpjrnaqelme"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfikf2j3000cizpjk8paeue2"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfikf2j4000eizpj1ucpxj2h"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfikf2j6000fizpj1we32o73"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfikf2j7000hizpjcuqn42qi"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfikf2j9000jizpjcp86wbz6"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfikf2jb000lizpjx0ihff4a"
+    },
+    {
+      "roleId": "cmfikf2ij0001izpjiti5605w",
+      "permissionId": "cmfikf2jd000nizpjmc7mldk8"
+    },
+    {
+      "roleId": "cmfikf2il0002izpjlri6unyf",
+      "permissionId": "cmfikf2ix0006izpjmia20jnh"
+    },
+    {
+      "roleId": "cmfikf2il0002izpjlri6unyf",
+      "permissionId": "cmfikf2iz0008izpj5b01n2hz"
+    },
+    {
+      "roleId": "cmfikf2il0002izpjlri6unyf",
+      "permissionId": "cmfikf2j1000aizpjrnaqelme"
+    },
+    {
+      "roleId": "cmfikf2il0002izpjlri6unyf",
+      "permissionId": "cmfikf2j3000cizpjk8paeue2"
+    },
+    {
+      "roleId": "cmfikf2il0002izpjlri6unyf",
+      "permissionId": "cmfikf2j4000eizpj1ucpxj2h"
+    }
+  ]
+}

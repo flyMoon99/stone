@@ -33,6 +33,7 @@ export const createMemberController = async (req: Request, res: Response, next: 
     res.status(HTTP_STATUS.CREATED).json(
       createSuccessResponse(member, 'Member created successfully')
     )
+    return
   } catch (error) {
     logger.error('Create member error:', error)
     
@@ -40,6 +41,7 @@ export const createMemberController = async (req: Request, res: Response, next: 
     const statusCode = message === 'Account already exists' ? HTTP_STATUS.BAD_REQUEST : HTTP_STATUS.INTERNAL_SERVER_ERROR
     
     res.status(statusCode).json(createErrorResponse(message, statusCode))
+    return
   }
 }
 
@@ -64,9 +66,11 @@ export const getMemberListController = async (req: Request, res: Response, next:
     const result = await getMemberList(params)
     
     res.json(createSuccessResponse(result, 'Member list retrieved successfully'))
+    return
   } catch (error) {
     logger.error('Get member list error:', error)
     next(error)
+    return
   }
 }
 
@@ -92,9 +96,11 @@ export const searchMembersController = async (req: Request, res: Response, next:
     const result = await searchMembers(params)
     
     res.json(createSuccessResponse(result, 'Members search completed successfully'))
+    return
   } catch (error) {
     logger.error('Search members error:', error)
     next(error)
+    return
   }
 }
 
@@ -119,9 +125,11 @@ export const getMemberByIdController = async (req: Request, res: Response, next:
     }
 
     res.json(createSuccessResponse(member, 'Member retrieved successfully'))
+    return
   } catch (error) {
     logger.error('Get member error:', error)
     next(error)
+    return
   }
 }
 
@@ -148,6 +156,7 @@ export const updateMemberController = async (req: Request, res: Response, next: 
     const member = await updateMember(idValue.id, updateValue)
     
     res.json(createSuccessResponse(member, 'Member updated successfully'))
+    return
   } catch (error) {
     logger.error('Update member error:', error)
     
@@ -157,6 +166,7 @@ export const updateMemberController = async (req: Request, res: Response, next: 
       : HTTP_STATUS.INTERNAL_SERVER_ERROR
     
     res.status(statusCode).json(createErrorResponse(message, statusCode))
+    return
   }
 }
 
@@ -181,8 +191,10 @@ export const batchUpdateMemberStatusController = async (req: Request, res: Respo
     const count = await batchUpdateMemberStatus(ids, status)
     
     res.json(createSuccessResponse({ count }, `${count} members status updated successfully`))
+    return
   } catch (error) {
     logger.error('Batch update member status error:', error)
     next(error)
+    return
   }
 }

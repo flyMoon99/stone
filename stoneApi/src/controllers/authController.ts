@@ -19,6 +19,7 @@ export const adminLoginController = async (req: Request, res: Response, next: Ne
     const loginResult = await adminLogin(value)
     
     res.json(createSuccessResponse(loginResult, 'Admin login successful'))
+    return
   } catch (error) {
     logger.error('Admin login error:', error)
     
@@ -26,6 +27,7 @@ export const adminLoginController = async (req: Request, res: Response, next: Ne
     res.status(HTTP_STATUS.UNAUTHORIZED).json(
       createErrorResponse(message, HTTP_STATUS.UNAUTHORIZED)
     )
+    return
   }
 }
 
@@ -44,6 +46,7 @@ export const memberLoginController = async (req: Request, res: Response, next: N
     const loginResult = await memberLogin(value)
     
     res.json(createSuccessResponse(loginResult, 'Member login successful'))
+    return
   } catch (error) {
     logger.error('Member login error:', error)
     
@@ -51,6 +54,7 @@ export const memberLoginController = async (req: Request, res: Response, next: N
     res.status(HTTP_STATUS.UNAUTHORIZED).json(
       createErrorResponse(message, HTTP_STATUS.UNAUTHORIZED)
     )
+    return
   }
 }
 
@@ -72,9 +76,11 @@ export const getAdminProfileController = async (req: Request, res: Response, nex
     }
 
     res.json(createSuccessResponse(admin, 'Admin profile retrieved successfully'))
+    return
   } catch (error) {
     logger.error('Get admin profile error:', error)
     next(error)
+    return
   }
 }
 
@@ -96,8 +102,10 @@ export const getMemberProfileController = async (req: Request, res: Response, ne
     }
 
     res.json(createSuccessResponse(member, 'Member profile retrieved successfully'))
+    return
   } catch (error) {
     logger.error('Get member profile error:', error)
     next(error)
+    return
   }
 }

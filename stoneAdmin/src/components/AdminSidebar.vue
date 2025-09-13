@@ -23,7 +23,10 @@ import {
   GridOutline,
   PeopleOutline,
   PersonOutline,
-  ShieldCheckmarkOutline
+  ShieldCheckmarkOutline,
+  KeyOutline,
+  LockClosedOutline,
+  PersonAddOutline
 } from '@vicons/ionicons5'
 import { useAuthStore } from '@/stores/auth'
 import { useTabsStore } from '@/stores/tabs'
@@ -49,7 +52,7 @@ let expandedKeys = ref<string[]>([])
 
 // 根据当前路径计算需要展开的父级菜单
 const resolveExpandedKeys = (path: string): string[] => {
-  if (path.startsWith('/admin/admins') || path.startsWith('/admin/members')) {
+  if (path.startsWith('/admin/admins') || path.startsWith('/admin/members') || path.startsWith('/admin/roles') || path.startsWith('/admin/permissions') || path.startsWith('/admin/user-permissions')) {
     return ['user-management']
   }
   return []
@@ -83,6 +86,24 @@ const menuOptions = computed(() => {
           label: '会员管理',
           key: '/admin/members',
           icon: () => h(NIcon, { size: 16 }, { default: () => h(PersonOutline) })
+        },
+        {
+          label: '角色管理',
+          key: '/admin/roles',
+          icon: () => h(NIcon, { size: 16 }, { default: () => h(KeyOutline) }),
+          show: authStore.isSuperAdmin
+        },
+        {
+          label: '权限管理',
+          key: '/admin/permissions',
+          icon: () => h(NIcon, { size: 16 }, { default: () => h(LockClosedOutline) }),
+          show: authStore.isSuperAdmin
+        },
+        {
+          label: '用户权限分配',
+          key: '/admin/user-permissions',
+          icon: () => h(NIcon, { size: 16 }, { default: () => h(PersonAddOutline) }),
+          show: authStore.isSuperAdmin
         }
       ].filter(item => item.show !== false)
     }
