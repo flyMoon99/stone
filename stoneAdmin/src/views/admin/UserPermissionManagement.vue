@@ -425,6 +425,44 @@ const getPermissionTypeColor = (type: string) => {
   }
 }
 
+// 构建权限树结构
+const buildPermissionTree = (permissions: Permission[]): Permission[] => {
+  if (!permissions || permissions.length === 0) {
+    return []
+  }
+
+  // 创建权限映射
+  const permissionMap = new Map<string, Permission>()
+  const rootPermissions: Permission[] = []
+
+  // 首先将所有权限添加到映射中，并初始化children数组
+  permissions.forEach(permission => {
+    permissionMap.set(permission.id, {
+      ...permission,
+      children: []
+    })
+  })
+
+  // 构建树形结构
+  permissions.forEach(permission => {
+    const permissionNode = permissionMap.get(permission.id)!
+    
+    if (permission.parentId && permissionMap.has(permission.parentId)) {
+      // 有父权限，添加到父权限的children中
+      const parent = permissionMap.get(permission.parentId)!
+      if (!parent.children) {
+        parent.children = []
+      }
+      parent.children.push(permissionNode)
+    } else {
+      // 没有父权限或父权限不在用户权限列表中，作为根节点
+      rootPermissions.push(permissionNode)
+    }
+  })
+
+  return rootPermissions
+}
+
 // 表格列配置
 const columns: DataTableColumns<Admin> = [
   {
@@ -453,10 +491,21 @@ const columns: DataTableColumns<Admin> = [
     key: 'roles',
     width: 200,
     render: (row) => {
-      // 这里需要从用户角色数据中获取，暂时显示占位符
-      return h('div', { style: 'display: flex; gap: 4px; flex-wrap: wrap;' }, [
-        h(NTag, { size: 'small', type: 'info' }, { default: () => '加载中...' })
-      ])
+      if (!row.roles || row.roles.length === 0) {
+        return h(NTag, { size: 'small', type: 'default' }, { default: () => '无角色' })
+      }
+      
+      return h('div', { style: 'display: flex; gap: 4px; flex-wrap: wrap;' }, 
+        row.roles.map((role: any) => 
+          h(NTag, { 
+            key: role.id,
+            size: 'small', 
+            type: 'info' 
+          }, { 
+            default: () => role.name 
+          })
+        )
+      )
     }
   },
   {
@@ -669,7 +718,9 @@ const handleViewPermissions = async (user: Admin) => {
     // 获取用户权限
     const permissionsResponse = await getUserPermissions(user.id)
     if (permissionsResponse.success) {
-      userPermissionTree.value = permissionsResponse.data.permissions || []
+      // 将扁平的权限数据转换为树形结构
+      const flatPermissions = permissionsResponse.data.permissions || []
+      userPermissionTree.value = buildPermissionTree(flatPermissions)
       // 默认展开第一层
       permissionExpandedKeys.value = userPermissionTree.value.map(p => p.id)
     }

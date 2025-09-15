@@ -312,14 +312,14 @@ export const createPermissionSchema = Joi.object({
   path: Joi.string()
     .max(200)
     .optional()
-    .allow('')
+    .allow('', null) // Allow null for non-API types
     .messages({
       'string.max': '路径不能超过200位'
     }),
   method: Joi.string()
     .max(10)
     .optional()
-    .allow('')
+    .allow('', null) // Allow null for non-API types
     .messages({
       'string.max': '请求方法不能超过10位'
     }),
@@ -365,14 +365,14 @@ export const updatePermissionSchema = Joi.object({
   path: Joi.string()
     .max(200)
     .optional()
-    .allow('')
+    .allow('', null)
     .messages({
       'string.max': '路径不能超过200位'
     }),
   method: Joi.string()
     .max(10)
     .optional()
-    .allow('')
+    .allow('', null)
     .messages({
       'string.max': '请求方法不能超过10位'
     }),

@@ -124,8 +124,10 @@ export async function getUserPermissions(userId: string): Promise<UserPermission
     key: p.key,
     name: p.name,
     type: p.type,
+    parentId: p.parentId,
     path: p.path,
-    method: p.method
+    method: p.method,
+    enabled: p.enabled
   }))
 
   const permissionKeys = permissions.map(p => p.key)

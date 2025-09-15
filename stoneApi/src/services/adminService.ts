@@ -64,13 +64,31 @@ export async function getAdminList(params: PaginationParams & {
         createdAt: true,
         updatedAt: true,
         status: true,
-        lastLoginAt: true
+        lastLoginAt: true,
+        admin_roles: {
+          select: {
+            roles: {
+              select: {
+                id: true,
+                name: true,
+                code: true
+              }
+            }
+          }
+        }
       }
     }),
     prisma.admin.count({ where })
   ])
 
-  return createPaginationResponse(admins, total, page, pageSize)
+  // 处理角色信息，将嵌套的角色数据扁平化
+  const processedAdmins = admins.map(admin => ({
+    ...admin,
+    roles: admin.admin_roles.map(ar => ar.roles),
+    admin_roles: undefined // 移除原始的嵌套结构
+  }))
+
+  return createPaginationResponse(processedAdmins, total, page, pageSize)
 }
 
 // 获取管理员详情

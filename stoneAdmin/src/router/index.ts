@@ -159,6 +159,11 @@ router.beforeEach(async (to, from, next) => {
     await authStore.loadAuth()
   }
   
+  // 如果即将进入登录页，则清空上一次会话的标签
+  if (to.name === 'Login') {
+    try { tabsStore.clearAll() } catch {}
+  }
+  
   // 设置页面标题
   if (to.meta.title) {
     document.title = `${to.meta.title} - 基石管理后台`
@@ -166,7 +171,8 @@ router.beforeEach(async (to, from, next) => {
 
   // 检查认证要求
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    // 需要登录但未登录，跳转到登录页
+    // 需要登录但未登录，跳转到登录页，并清空标签
+    try { tabsStore.clearAll() } catch {}
     next({ name: 'Login', query: { redirect: to.fullPath } })
     return
   }

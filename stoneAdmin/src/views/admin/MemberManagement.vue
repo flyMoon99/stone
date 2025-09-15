@@ -41,7 +41,11 @@
         <div class="table-header">
           <span>会员列表</span>
           <div class="table-actions">
-            <n-button type="primary" @click="handleCreate">
+            <n-button 
+              v-permission="PERMISSIONS.MEMBER.CREATE"
+              type="primary" 
+              @click="handleCreate"
+            >
               <n-icon :size="16" class="mr-1">
                 <PersonAddOutline />
               </n-icon>
@@ -173,6 +177,8 @@ import type { FormInst, FormRules, DataTableColumns } from 'naive-ui'
 import { useMessage, useDialog, NButton, NTag } from 'naive-ui'
 import type { Member } from '@stone/shared'
 import { UserStatus, formatDate } from '@stone/shared'
+import { usePermissionStore } from '@/stores/permission'
+import { PERMISSIONS } from '@/utils/permission'
 import { 
   getMemberList, 
   searchMembers,
@@ -183,6 +189,7 @@ import {
 
 const message = useMessage()
 const dialog = useDialog()
+const permissionStore = usePermissionStore()
 
 // 响应式数据
 const loading = ref(false)
@@ -300,16 +307,19 @@ const columns: DataTableColumns<Member> = [
           },
           { default: () => '详情', icon: () => h(EyeOutline) }
         ),
-        h(
-          NButton,
-          {
-            size: 'small',
-            type: 'primary',
-            ghost: true,
-            onClick: () => handleEdit(row)
-          },
-          { default: () => '编辑', icon: () => h(CreateOutline) }
-        )
+        // 只有有编辑权限的用户才显示编辑按钮
+        ...(permissionStore.hasPermission(PERMISSIONS.MEMBER.UPDATE) ? [
+          h(
+            NButton,
+            {
+              size: 'small',
+              type: 'primary',
+              ghost: true,
+              onClick: () => handleEdit(row)
+            },
+            { default: () => '编辑', icon: () => h(CreateOutline) }
+          )
+        ] : [])
       ]
     }
   }

@@ -196,9 +196,17 @@ export async function deleteRole(id: string): Promise<void> {
     throw new Error('该角色正在被使用，无法删除')
   }
 
-  // 删除角色（会自动删除相关的权限关联）
-  await prisma.role.delete({
-    where: { id }
+  // 使用事务删除角色和相关的权限关联
+  await prisma.$transaction(async (tx) => {
+    // 先删除角色权限关联
+    await tx.rolePermission.deleteMany({
+      where: { roleId: id }
+    })
+    
+    // 再删除角色
+    await tx.role.delete({
+      where: { id }
+    })
   })
 
   logger.info(`Role deleted: ${existingRole.name} (${existingRole.id})`)

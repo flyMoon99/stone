@@ -69,6 +69,11 @@ api.interceptors.response.use(
             // refresh token也失效了，清除所有token
             localStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN)
             localStorage.removeItem(STORAGE_KEYS.ADMIN_REFRESH_TOKEN)
+            try {
+              // 延迟加载，避免循环依赖
+              const { useTabsStore } = await import('@/stores/tabs')
+              useTabsStore().clearAll()
+            } catch {}
             window.location.href = '/login'
             return Promise.reject(refreshError)
           }
@@ -77,6 +82,10 @@ api.interceptors.response.use(
         // 没有refresh token，直接跳转到登录页
         localStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN)
         localStorage.removeItem(STORAGE_KEYS.ADMIN_REFRESH_TOKEN)
+        try {
+          const { useTabsStore } = await import('@/stores/tabs')
+          useTabsStore().clearAll()
+        } catch {}
         window.location.href = '/login'
       }
     }
@@ -196,9 +205,8 @@ export const getSystemInfo = async (): Promise<ApiResponse> => {
 
 // 角色管理API
 export const getRoleList = async (params?: PaginationParams & {
-  name?: string
-  code?: string
-  status?: string
+  keyword?: string
+  status?: boolean
 }): Promise<ApiResponse> => {
   const response = await api.get('/rbac/roles', { params })
   return response.data
@@ -221,7 +229,7 @@ export const createRole = async (data: {
 export const updateRole = async (id: string, data: {
   name?: string
   description?: string
-  status?: string
+  status?: boolean
 }): Promise<ApiResponse> => {
   const response = await api.put(`/rbac/roles/${id}`, data)
   return response.data
@@ -234,7 +242,7 @@ export const deleteRole = async (id: string): Promise<ApiResponse> => {
 
 export const batchUpdateRoleStatus = async (data: {
   ids: string[]
-  status: string
+  status: boolean
 }): Promise<ApiResponse> => {
   const response = await api.patch('/rbac/roles/batch-status', data)
   return response.data

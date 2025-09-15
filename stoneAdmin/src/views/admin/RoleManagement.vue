@@ -3,22 +3,13 @@
     <!-- 搜索和筛选 -->
     <n-card class="search-card">
       <n-form inline :model="searchForm" class="search-form">
-        <n-form-item label="角色名称" label-placement="left">
+        <n-form-item label="关键词" label-placement="left">
           <n-input 
-            v-model:value="searchForm.name" 
-            placeholder="请输入角色名称"
+            v-model:value="searchForm.keyword" 
+            placeholder="请输入角色名称、编码或描述"
             clearable
             @keydown.enter="handleSearch"
-            style="width: 180px;"
-          />
-        </n-form-item>
-        <n-form-item label="角色编码" label-placement="left">
-          <n-input 
-            v-model:value="searchForm.code" 
-            placeholder="请输入角色编码"
-            clearable
-            @keydown.enter="handleSearch"
-            style="width: 180px;"
+            style="width: 240px;"
           />
         </n-form-item>
         <n-form-item label="状态" label-placement="left">
@@ -58,13 +49,13 @@
             </n-button>
             <n-button 
               :disabled="!selectedRowKeys.length"
-              @click="handleBatchStatusUpdate('ACTIVE')"
+              @click="handleBatchStatusUpdate(true)"
             >
               批量启用
             </n-button>
             <n-button 
               :disabled="!selectedRowKeys.length"
-              @click="handleBatchStatusUpdate('INACTIVE')"
+              @click="handleBatchStatusUpdate(false)"
             >
               批量禁用
             </n-button>
@@ -215,7 +206,7 @@ interface Role {
   name: string
   code: string
   description?: string
-  status: 'ACTIVE' | 'INACTIVE'
+  status: boolean
   createdAt: string
   updatedAt: string
   _count?: {
@@ -253,9 +244,8 @@ const permissionTreeRef = ref<any>(null)
 
 // 搜索表单
 const searchForm = reactive({
-  name: '',
-  code: '',
-  status: null as 'ACTIVE' | 'INACTIVE' | null
+  keyword: '',
+  status: null as boolean | null
 })
 
 // 表单数据
@@ -263,7 +253,7 @@ const formData = reactive({
   name: '',
   code: '',
   description: '',
-  status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE'
+  status: true
 })
 
 // 权限相关数据
@@ -283,8 +273,8 @@ const pagination = reactive({
 
 // 选项数据
 const statusOptions = [
-  { label: '启用', value: 'ACTIVE' },
-  { label: '禁用', value: 'INACTIVE' }
+  { label: '启用', value: true },
+  { label: '禁用', value: false }
 ]
 
 // 表单验证规则
@@ -314,11 +304,6 @@ const columns: DataTableColumns<Role> = [
     width: 150
   },
   {
-    title: '角色编码',
-    key: 'code',
-    width: 150
-  },
-  {
     title: '描述',
     key: 'description',
     width: 200,
@@ -331,15 +316,12 @@ const columns: DataTableColumns<Role> = [
     key: 'status',
     width: 100,
     render: (row) => {
-      const statusMap = {
-        'ACTIVE': { label: '启用', type: 'success' },
-        'INACTIVE': { label: '禁用', type: 'error' }
-      }
-      const config = statusMap[row.status as keyof typeof statusMap]
-      if (!config) {
-        return h(NTag, { type: 'default' }, { default: () => row.status || '未知' })
-      }
-      return h(NTag, { type: config.type }, { default: () => config.label })
+      const isActive = row.status
+      return h(NTag, { 
+        type: isActive ? 'success' : 'error' 
+      }, { 
+        default: () => isActive ? '启用' : '禁用' 
+      })
     }
   },
   {
@@ -410,8 +392,7 @@ const fetchRoleList = async () => {
     const params = {
       page: pagination.page,
       pageSize: pagination.pageSize,
-      ...(searchForm.name && { name: searchForm.name }),
-      ...(searchForm.code && { code: searchForm.code }),
+      ...(searchForm.keyword && { keyword: searchForm.keyword }),
       ...(searchForm.status && { status: searchForm.status })
     }
     
@@ -482,8 +463,7 @@ const handleSearch = () => {
 
 // 重置搜索
 const handleReset = () => {
-  searchForm.name = ''
-  searchForm.code = ''
+  searchForm.keyword = ''
   searchForm.status = null
   pagination.page = 1
   fetchRoleList()
@@ -507,7 +487,7 @@ const handleCreate = () => {
   formData.name = ''
   formData.code = ''
   formData.description = ''
-  formData.status = 'ACTIVE'
+  formData.status = true
   showCreateModal.value = true
 }
 
@@ -537,16 +517,21 @@ const handleDelete = (role: Role) => {
         } else {
           message.error(response.message || '删除失败')
         }
-      } catch (error) {
-        message.error('删除角色失败，请重试')
+      } catch (error: any) {
+        // 处理HTTP错误响应
+        if (error.response?.data?.message) {
+          message.error(error.response.data.message)
+        } else {
+          message.error('删除角色失败，请重试')
+        }
       }
     }
   })
 }
 
 // 批量状态更新
-const handleBatchStatusUpdate = (status: 'ACTIVE' | 'INACTIVE') => {
-  const action = status === 'ACTIVE' ? '启用' : '禁用'
+const handleBatchStatusUpdate = (status: boolean) => {
+  const action = status ? '启用' : '禁用'
   dialog.info({
     title: `确认${action}`,
     content: `确定要${action}选中的 ${selectedRowKeys.value.length} 个角色吗？`,
@@ -677,7 +662,7 @@ const handleCancel = () => {
   formData.name = ''
   formData.code = ''
   formData.description = ''
-  formData.status = 'ACTIVE'
+  formData.status = true
 }
 
 // 取消权限分配

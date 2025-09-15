@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { adminAuth, superAdminAuth } from '../middleware/auth'
+import { adminAuth, superAdminAuth, adminAuthWithPermissions, requirePermissions } from '../middleware/auth'
 import { adminLoginController, getAdminProfileController } from '../controllers/authController'
 import {
   createAdminController,
@@ -32,12 +32,12 @@ router.put('/admins/:id', superAdminAuth, updateAdminController)
 router.patch('/admins/batch-status', superAdminAuth, batchUpdateAdminStatusController)
 
 // 会员管理路由（需要管理员权限）
-router.post('/members', adminAuth, createMemberController)
-router.get('/members', adminAuth, getMemberListController)
-router.get('/members/search', adminAuth, searchMembersController)
-router.get('/members/:id', adminAuth, getMemberByIdController)
-router.put('/members/:id', adminAuth, updateMemberController)
+router.post('/members', adminAuthWithPermissions, requirePermissions(['user.create']), createMemberController)
+router.get('/members', adminAuthWithPermissions, requirePermissions(['user.list']), getMemberListController)
+router.get('/members/search', adminAuthWithPermissions, requirePermissions(['user.list']), searchMembersController)
+router.get('/members/:id', adminAuthWithPermissions, requirePermissions(['user.list']), getMemberByIdController)
+router.put('/members/:id', adminAuthWithPermissions, requirePermissions(['user.update']), updateMemberController)
 
-router.patch('/members/batch-status', adminAuth, batchUpdateMemberStatusController)
+router.patch('/members/batch-status', adminAuthWithPermissions, requirePermissions(['user.update']), batchUpdateMemberStatusController)
 
 export default router

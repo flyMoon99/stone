@@ -239,7 +239,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, h, computed } from 'vue'
+import { ref, reactive, onMounted, h, computed, watch } from 'vue'
 import { 
   AddOutline,
   SearchOutline, 
@@ -364,7 +364,7 @@ const parentOptions = computed(() => {
 })
 
 // 表单验证规则
-const formRules: FormRules = {
+const formRules = computed((): FormRules => ({
   name: [
     { required: true, message: '请输入权限名称', trigger: ['input', 'blur'] },
     { min: 2, max: 50, message: '权限名称长度为2-50个字符', trigger: ['input', 'blur'] }
@@ -377,24 +377,16 @@ const formRules: FormRules = {
   type: [
     { required: true, message: '请选择权限类型', trigger: ['change', 'blur'] }
   ],
-  path: [
-    { 
-      required: computed(() => formData.type === 'API'), 
-      message: '请输入API路径', 
-      trigger: ['input', 'blur'] 
-    }
-  ],
-  method: [
-    { 
-      required: computed(() => formData.type === 'API'), 
-      message: '请选择HTTP方法', 
-      trigger: ['change', 'blur'] 
-    }
-  ],
+  path: formData.type === 'API' ? [
+    { required: true, message: '请输入API路径', trigger: ['input', 'blur'] }
+  ] : [],
+  method: formData.type === 'API' ? [
+    { required: true, message: '请选择HTTP方法', trigger: ['change', 'blur'] }
+  ] : [],
   order: [
     { type: 'number', message: '排序必须是数字', trigger: ['input', 'blur'] }
   ]
-}
+}))
 
 // 权限类型图标映射
 const getTypeIcon = (type: string) => {
@@ -782,22 +774,41 @@ const handleSubmit = async () => {
   if (!formRef.value) return
 
   try {
+    // 先进行表单验证
     await formRef.value.validate()
+  } catch (validationError) {
+    // 表单验证失败，不需要显示错误信息，Naive UI会自动显示字段级别的错误
+    return
+  }
+
+  try {
     submitting.value = true
 
-    const submitData = {
+    const submitData: any = {
       name: formData.name,
-      key: formData.key,
       type: formData.type,
       parentId: formData.parentId,
-      order: formData.order,
-      ...(formData.type === 'API' && {
-        path: formData.path,
-        method: formData.method
-      }),
-      ...(editingPermission.value && {
-        enabled: formData.enabled
-      })
+      order: formData.order
+    }
+
+    // 只在编辑时包含key字段（创建时key不能为空，编辑时不允许修改）
+    if (!editingPermission.value) {
+      submitData.key = formData.key
+    }
+
+    // API类型包含path和method，非API类型清空这些字段
+    if (formData.type === 'API') {
+      submitData.path = formData.path
+      submitData.method = formData.method
+    } else {
+      // 非API类型时，明确设置为null以清空数据库中的值
+      submitData.path = null
+      submitData.method = null
+    }
+
+    // 编辑时包含enabled状态
+    if (editingPermission.value) {
+      submitData.enabled = formData.enabled
     }
 
     if (editingPermission.value) {
@@ -829,8 +840,10 @@ const handleSubmit = async () => {
         message.error(response.message || '创建失败')
       }
     }
-  } catch (error) {
-    message.warning('请检查表单信息是否填写正确')
+  } catch (error: any) {
+    // API调用错误，显示后端返回的具体错误信息
+    const errorMessage = error.response?.data?.message || error.message || '操作失败，请重试'
+    message.error(errorMessage)
   } finally {
     submitting.value = false
   }
@@ -849,6 +862,14 @@ const handleCancel = () => {
   formData.order = 0
   formData.enabled = true
 }
+
+// 监听权限类型变化，清空API相关字段
+watch(() => formData.type, (newType) => {
+  if (newType !== 'API') {
+    formData.path = ''
+    formData.method = ''
+  }
+})
 
 onMounted(() => {
   fetchPermissionTree()

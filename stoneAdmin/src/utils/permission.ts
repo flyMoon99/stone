@@ -178,10 +178,10 @@ export const PERMISSIONS = {
   
   // 会员管理
   MEMBER: {
-    LIST: 'member.list',
-    CREATE: 'member.create',
-    UPDATE: 'member.update',
-    DELETE: 'member.delete'
+    LIST: 'user.list',
+    CREATE: 'user.create',
+    UPDATE: 'user.update',
+    DELETE: 'user.delete'
   }
 } as const
 

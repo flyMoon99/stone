@@ -106,6 +106,11 @@ const menuOptions = computed(() => {
           show: authStore.isSuperAdmin
         }
       ].filter(item => item.show !== false)
+    },
+    {
+      label: '首页-1',
+      key: '/dashboard',
+      icon: () => h(NIcon, { size: 16 }, { default: () => h(GridOutline) })
     }
   ]
 
@@ -166,10 +171,34 @@ onMounted(() => {
   margin-left: 0 !important;
 }
 
+/* 移除顶级子菜单容器自身的左侧内边距，避免整行被右移 */
+:deep(.n-menu > .n-submenu) {
+  padding-left: 0 !important;
+}
+
 /* 统一所有菜单项内容的左侧缩进（顶级项） */
 /* 重置所有菜单项缩进，确保顶级项完全对齐 */
 :deep(.n-menu-item-content) {
   padding-left: 20px !important;
+}
+
+/* 明确覆盖：顶级子菜单标题与顶级无子菜单项保持同样左缩进 */
+:deep(.n-menu > .n-submenu > .n-menu-item-content),
+:deep(.n-menu > .n-menu-item > .n-menu-item-content) {
+  /* 同步覆盖变量与实际padding，防止内部样式回退 */
+  --n-item-padding-left: 20px !important;
+  padding-left: 20px !important;
+}
+
+/* 确保顶级子菜单图标区没有额外左外边距 */
+:deep(.n-menu > .n-submenu > .n-menu-item-content .n-menu-item-content__icon),
+:deep(.n-menu > .n-menu-item > .n-menu-item-content .n-menu-item-content__icon) {
+  margin-left: 0 !important;
+}
+
+/* 统一图标与文字间距（与上方图标容器宽度设置配合） */
+:deep(.n-menu-item-content-header) {
+  column-gap: 8px !important;
 }
 
 /* 二级菜单项额外缩进 */

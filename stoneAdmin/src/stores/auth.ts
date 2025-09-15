@@ -3,6 +3,8 @@ import { defineStore } from 'pinia'
 import type { LoginRequest, LoginResponse, Admin } from '@stone/shared'
 import { STORAGE_KEYS } from '@stone/shared'
 import { adminLogin, getAdminProfile } from '@/utils/api'
+import { useTabsStore } from '@/stores/tabs'
+import { usePermissionStore } from '@/stores/permission'
 
 export const useAuthStore = defineStore('auth', () => {
   // 状态
@@ -45,6 +47,12 @@ export const useAuthStore = defineStore('auth', () => {
       if (response.success) {
         const { token: newToken, refreshToken: newRefreshToken, user: userData } = response.data
         
+        // 登录成功前，清空旧会话的标签记录
+        try {
+          const tabsStore = useTabsStore()
+          tabsStore.clearAll()
+        } catch {}
+        
         // 保存认证信息
         token.value = newToken
         refreshToken.value = newRefreshToken || null
@@ -53,6 +61,15 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.setItem(STORAGE_KEYS.ADMIN_TOKEN, newToken)
         if (newRefreshToken) {
           localStorage.setItem(STORAGE_KEYS.ADMIN_REFRESH_TOKEN, newRefreshToken)
+        }
+        
+        // 登录成功后加载用户权限
+        try {
+          const permissionStore = usePermissionStore()
+          await permissionStore.fetchUserPermissions()
+        } catch (permissionError) {
+          console.warn('Failed to load user permissions:', permissionError)
+          // 权限加载失败不影响登录流程
         }
         
         return Promise.resolve()
@@ -84,14 +101,22 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // 登出
-  const logout = () => {
+  const clearSession = () => {
     token.value = null
     refreshToken.value = null
     user.value = null
     isInitialized.value = true
     localStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN)
     localStorage.removeItem(STORAGE_KEYS.ADMIN_REFRESH_TOKEN)
+    try {
+      const tabsStore = useTabsStore()
+      tabsStore.clearAll()
+    } catch {}
+  }
+
+  // 登出
+  const logout = () => {
+    clearSession()
   }
 
   // 获取用户信息
@@ -117,23 +142,25 @@ export const useAuthStore = defineStore('auth', () => {
         }
         
         user.value = adminUser
+        
+        // 获取用户信息成功后加载权限
+        try {
+          const permissionStore = usePermissionStore()
+          await permissionStore.fetchUserPermissions()
+        } catch (permissionError) {
+          console.warn('Failed to load user permissions:', permissionError)
+          // 权限加载失败不影响认证流程
+        }
+        
         return true
       } else {
-        // Token可能已过期，清除认证信息
-        token.value = null
-        refreshToken.value = null
-        user.value = null
-        localStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN)
-        localStorage.removeItem(STORAGE_KEYS.ADMIN_REFRESH_TOKEN)
+        // Token可能已过期，清除认证信息与标签
+        clearSession()
         return false
       }
     } catch (error) {
-      // 获取用户信息失败，清除认证信息
-      token.value = null
-      refreshToken.value = null
-      user.value = null
-      localStorage.removeItem(STORAGE_KEYS.ADMIN_TOKEN)
-      localStorage.removeItem(STORAGE_KEYS.ADMIN_REFRESH_TOKEN)
+      // 获取用户信息失败，清除认证信息与标签
+      clearSession()
       return false
     }
   }
