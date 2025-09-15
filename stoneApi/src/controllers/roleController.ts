@@ -228,13 +228,34 @@ export const assignPermissionsToRoleController = async (req: Request, res: Respo
       )
     }
 
+    // 获取操作者信息（从JWT token中获取）
+    const operatorId = (req as any).user?.id
+    const operatorAccount = (req as any).user?.account
+    
+    // 记录审计日志
+    logger.info(`[权限变更审计] 操作者: ${operatorAccount || 'Unknown'} (${operatorId || 'Unknown'})`)
+    logger.info(`[权限变更审计] 操作类型: 角色权限分配`)
+    logger.info(`[权限变更审计] 目标角色ID: ${idValue.id}`)
+    logger.info(`[权限变更审计] 分配权限数量: ${assignValue.permissionIds.length}`)
+    logger.info(`[权限变更审计] 操作时间: ${new Date().toISOString()}`)
+    logger.info(`[权限变更审计] 客户端IP: ${req.ip || req.connection.remoteAddress}`)
+    logger.info(`[权限变更审计] User-Agent: ${req.get('User-Agent') || 'Unknown'}`)
+
     // 分配权限
     await assignPermissionsToRole(idValue.id, assignValue.permissionIds)
+    
+    // 记录操作完成
+    logger.info(`[权限变更审计] 操作完成: 角色权限分配成功 - 角色ID: ${idValue.id}`)
     
     res.json(createSuccessResponse(null, 'Permissions assigned to role successfully'))
     return
   } catch (error) {
     logger.error('Assign permissions to role error:', error)
+    
+    // 记录操作失败的审计日志
+    const operatorId = (req as any).user?.id
+    const operatorAccount = (req as any).user?.account
+    logger.error(`[权限变更审计] 操作失败: 角色权限分配失败 - 操作者: ${operatorAccount || 'Unknown'} (${operatorId || 'Unknown'}) - 错误: ${error instanceof Error ? error.message : 'Unknown error'}`)
     
     const message = error instanceof Error ? error.message : 'Failed to assign permissions'
     const statusCode = ['角色不存在', '部分权限不存在'].includes(message) 

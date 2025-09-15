@@ -250,13 +250,59 @@ export async function assignPermissionsToRole(roleId: string, permissionIds: str
     throw new Error('角色不存在')
   }
 
+  // 获取编辑前的权限列表用于日志对比
+  const existingRolePermissions = await prisma.rolePermission.findMany({
+    where: { roleId },
+    include: {
+      permissions: {
+        select: {
+          id: true,
+          key: true,
+          name: true,
+          type: true
+        }
+      }
+    }
+  })
+
+  const existingPermissionIds = existingRolePermissions.map(rp => rp.permissions.id)
+  const existingPermissions = existingRolePermissions.map(rp => ({
+    id: rp.permissions.id,
+    key: rp.permissions.key,
+    name: rp.permissions.name,
+    type: rp.permissions.type
+  }))
+
   // 检查权限是否存在
   const permissions = await prisma.permission.findMany({
-    where: { id: { in: permissionIds } }
+    where: { id: { in: permissionIds } },
+    select: {
+      id: true,
+      key: true,
+      name: true,
+      type: true
+    }
   })
 
   if (permissions.length !== permissionIds.length) {
     throw new Error('部分权限不存在')
+  }
+
+  // 计算权限变化
+  const addedPermissions = permissions.filter(p => !existingPermissionIds.includes(p.id))
+  const removedPermissions = existingPermissions.filter(p => !permissionIds.includes(p.id))
+  const unchangedPermissions = permissions.filter(p => existingPermissionIds.includes(p.id))
+
+  // 记录编辑前的权限状态
+  logger.info(`[权限编辑前] 角色: ${role.name} (${roleId})`)
+  logger.info(`[权限编辑前] 现有权限数量: ${existingPermissions.length}`)
+  if (existingPermissions.length > 0) {
+    logger.info(`[权限编辑前] 权限列表:`)
+    existingPermissions.forEach(p => {
+      logger.info(`  - ${p.name} (${p.key}) [${p.type}]`)
+    })
+  } else {
+    logger.info(`[权限编辑前] 无权限`)
   }
 
   // 使用事务处理权限分配
@@ -277,7 +323,46 @@ export async function assignPermissionsToRole(roleId: string, permissionIds: str
     }
   })
 
-  logger.info(`Assigned ${permissionIds.length} permissions to role: ${role.name} (${roleId})`)
+  // 记录编辑后的权限状态和变化详情
+  logger.info(`[权限编辑后] 角色: ${role.name} (${roleId})`)
+  logger.info(`[权限编辑后] 新权限数量: ${permissions.length}`)
+  
+  if (permissions.length > 0) {
+    logger.info(`[权限编辑后] 权限列表:`)
+    permissions.forEach(p => {
+      logger.info(`  - ${p.name} (${p.key}) [${p.type}]`)
+    })
+  } else {
+    logger.info(`[权限编辑后] 无权限`)
+  }
+
+  // 记录权限变化详情
+  logger.info(`[权限变化统计] 角色: ${role.name} (${roleId})`)
+  logger.info(`  - 新增权限: ${addedPermissions.length}个`)
+  if (addedPermissions.length > 0) {
+    addedPermissions.forEach(p => {
+      logger.info(`    + ${p.name} (${p.key}) [${p.type}]`)
+    })
+  }
+  
+  logger.info(`  - 移除权限: ${removedPermissions.length}个`)
+  if (removedPermissions.length > 0) {
+    removedPermissions.forEach(p => {
+      logger.info(`    - ${p.name} (${p.key}) [${p.type}]`)
+    })
+  }
+  
+  logger.info(`  - 保持不变: ${unchangedPermissions.length}个`)
+
+  // 清除与该角色相关的所有缓存
+  const { PermissionCacheService } = require('./cacheService')
+  const permissionCache = new PermissionCacheService()
+  
+  logger.info(`[缓存清理] 开始清理角色相关缓存: ${role.name} (${roleId})`)
+  await permissionCache.clearRoleRelatedUserCache(roleId)
+  logger.info(`[缓存清理] 完成清理角色相关缓存: ${role.name} (${roleId})`)
+
+  logger.info(`[权限分配完成] 角色: ${role.name} (${roleId}) - 总权限数: ${permissionIds.length}`)
 }
 
 // 获取角色的权限列表

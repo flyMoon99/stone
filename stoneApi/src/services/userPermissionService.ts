@@ -119,7 +119,74 @@ export async function getUserPermissions(userId: string): Promise<UserPermission
     })
   })
 
-  const permissions = Array.from(permissionMap.values()).map(p => ({
+  // 获取用户的直接权限
+  let userPermissions = Array.from(permissionMap.values())
+  
+  // 检查并补充缺失的父权限
+  const missingParentIds = new Set<string>()
+  userPermissions.forEach(p => {
+    if (p.parentId && !permissionMap.has(p.parentId)) {
+      missingParentIds.add(p.parentId)
+    }
+  })
+
+  // 如果有缺失的父权限，从数据库获取并添加
+  if (missingParentIds.size > 0) {
+    logger.warn(`[getUserPermissions] Found ${missingParentIds.size} missing parent permissions for user ${userId}`)
+    
+    const missingParents = await prisma.permission.findMany({
+      where: {
+        id: { in: Array.from(missingParentIds) },
+        enabled: true
+      }
+    })
+
+    logger.info(`[getUserPermissions] Adding ${missingParents.length} missing parent permissions`)
+    
+    // 递归添加父权限的父权限
+    const addParentPermissions = async (permissions: Permission[]): Promise<Permission[]> => {
+      const allPermissions = [...permissions]
+      const additionalParentIds = new Set<string>()
+      
+      permissions.forEach(p => {
+        if (p.parentId && !allPermissions.find(existing => existing.id === p.parentId)) {
+          additionalParentIds.add(p.parentId)
+        }
+      })
+      
+      if (additionalParentIds.size > 0) {
+        const additionalParents = await prisma.permission.findMany({
+          where: {
+            id: { in: Array.from(additionalParentIds) },
+            enabled: true
+          }
+        })
+        
+        if (additionalParents.length > 0) {
+          logger.info(`[getUserPermissions] Adding ${additionalParents.length} additional parent permissions`)
+          const moreParents = await addParentPermissions(additionalParents)
+          allPermissions.push(...moreParents)
+        }
+      }
+      
+      return allPermissions
+    }
+
+    const allMissingParents = await addParentPermissions(missingParents)
+    
+    // 将缺失的父权限添加到用户权限中，并标记为补充权限
+    allMissingParents.forEach(parent => {
+      if (!permissionMap.has(parent.id)) {
+        permissionMap.set(parent.id, parent)
+        logger.info(`[getUserPermissions] Added missing parent permission: ${parent.name} (${parent.key})`)
+      }
+    })
+    
+    // 重新获取完整的权限列表
+    userPermissions = Array.from(permissionMap.values())
+  }
+
+  const permissions = userPermissions.map(p => ({
     id: p.id,
     key: p.key,
     name: p.name,
@@ -129,6 +196,16 @@ export async function getUserPermissions(userId: string): Promise<UserPermission
     method: p.method,
     enabled: p.enabled
   }))
+
+  // 调试日志：检查权限数据的完整性
+  logger.debug(`[getUserPermissions] User: ${userWithRolesAndPermissions.account} (${userId})`)
+  logger.debug(`[getUserPermissions] Total permissions: ${permissions.length}`)
+  logger.debug(`[getUserPermissions] Permissions with parentId: ${permissions.filter(p => p.parentId).length}`)
+  
+  // 详细记录每个权限的信息
+  permissions.forEach((p, index) => {
+    logger.debug(`[getUserPermissions] ${index + 1}. ${p.name} (${p.key}) - Parent: ${p.parentId || 'None'} - Type: ${p.type}`)
+  })
 
   const permissionKeys = permissions.map(p => p.key)
 
@@ -208,25 +285,69 @@ export async function getUserMenuPermissions(userId: string) {
   // 构建树结构
   const permissionMap = new Map()
   const rootPermissions: any[] = []
+  const orphanedPermissions: any[] = []
 
   // 初始化所有权限节点
   fullPermissions.forEach(permission => {
     permissionMap.set(permission.id, { ...permission, children: [] })
   })
 
+  // 按层级排序，确保父权限先处理
+  const sortedPermissions = [...fullPermissions].sort((a, b) => {
+    if (!a.parentId && b.parentId) return -1
+    if (a.parentId && !b.parentId) return 1
+    return 0
+  })
+
   // 构建父子关系
-  fullPermissions.forEach(permission => {
+  sortedPermissions.forEach(permission => {
     const node = permissionMap.get(permission.id)
     
-    if (permission.parentId && permissionMap.has(permission.parentId)) {
+    if (permission.parentId) {
+      // 有父权限ID，尝试找到父权限
       const parent = permissionMap.get(permission.parentId)
-      parent.children.push(node)
-    } else if (!permission.parentId) {
+      if (parent) {
+        // 父权限存在，添加到父权限的children中
+        parent.children.push(node)
+        logger.debug(`Menu permission: ${permission.name} -> Parent: ${parent.name}`)
+      } else {
+        // 父权限不存在于当前用户权限列表中，作为孤立权限处理
+        logger.warn(`Menu permission ${permission.name} (${permission.id}) has missing parent ${permission.parentId}`)
+        node.isOrphaned = true
+        orphanedPermissions.push(node)
+      }
+    } else {
+      // 没有父权限，作为根节点
       rootPermissions.push(node)
     }
   })
 
-  return rootPermissions
+  // 将孤立权限也添加到根级别
+  orphanedPermissions.forEach(permission => {
+    rootPermissions.push(permission)
+  })
+
+  // 递归排序子权限
+  const sortChildren = (permissions: any[]): any[] => {
+    return permissions.sort((a, b) => {
+      // 孤立权限排在后面
+      if (a.isOrphaned && !b.isOrphaned) return 1
+      if (!a.isOrphaned && b.isOrphaned) return -1
+      // 按order字段排序，如果没有则按名称排序
+      if (a.order !== undefined && b.order !== undefined) {
+        return a.order - b.order
+      }
+      return a.name.localeCompare(b.name)
+    }).map(permission => ({
+      ...permission,
+      children: permission.children ? sortChildren(permission.children) : []
+    }))
+  }
+
+  const result = sortChildren(rootPermissions)
+  logger.debug(`Built menu permission tree with ${result.length} root permissions`)
+  
+  return result
 }
 
 // 获取用户的角色列表

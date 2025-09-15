@@ -152,27 +152,70 @@ export async function getPermissionTree(): Promise<PermissionTreeNode[]> {
   // 构建树结构
   const permissionMap = new Map<string, PermissionTreeNode>()
   const rootPermissions: PermissionTreeNode[] = []
+  const orphanedPermissions: PermissionTreeNode[] = []
 
   // 初始化所有权限节点
   permissions.forEach(permission => {
     permissionMap.set(permission.id, { ...permission, children: [] })
   })
 
+  // 按层级排序，确保父权限先处理
+  const sortedPermissions = [...permissions].sort((a, b) => {
+    if (!a.parentId && b.parentId) return -1
+    if (a.parentId && !b.parentId) return 1
+    // 按order字段排序
+    if (a.order !== b.order) return a.order - b.order
+    return 0
+  })
+
   // 构建父子关系
-  permissions.forEach(permission => {
+  sortedPermissions.forEach(permission => {
     const node = permissionMap.get(permission.id)!
     
     if (permission.parentId) {
       const parent = permissionMap.get(permission.parentId)
       if (parent) {
         parent.children!.push(node)
+        logger.debug(`Permission: ${permission.name} -> Parent: ${parent.name}`)
+      } else {
+        // 父权限不存在，记录为孤立权限
+        console.warn(`Permission ${permission.name} (${permission.id}) has missing parent ${permission.parentId}`)
+        // 为孤立权限添加标识
+        (node as any).isOrphaned = true
+        orphanedPermissions.push(node)
       }
     } else {
       rootPermissions.push(node)
     }
   })
 
-  return rootPermissions
+  // 将孤立权限添加到根级别
+  orphanedPermissions.forEach(permission => {
+    rootPermissions.push(permission)
+  })
+
+  // 递归排序子权限
+  const sortChildren = (permissions: PermissionTreeNode[]): PermissionTreeNode[] => {
+    return permissions.sort((a, b) => {
+      // 孤立权限排在后面
+      const aOrphaned = (a as any).isOrphaned
+      const bOrphaned = (b as any).isOrphaned
+      if (aOrphaned && !bOrphaned) return 1
+      if (!aOrphaned && bOrphaned) return -1
+      
+      // 按order字段排序
+      if (a.order !== b.order) return a.order - b.order
+      return a.name.localeCompare(b.name)
+    }).map(permission => ({
+      ...permission,
+      children: permission.children ? sortChildren(permission.children) : []
+    }))
+  }
+
+  const result = sortChildren(rootPermissions)
+  logger.debug(`Built permission tree with ${result.length} root permissions, ${orphanedPermissions.length} orphaned`)
+  
+  return result
 }
 
 // 获取权限详情
@@ -322,27 +365,68 @@ export async function getMenuPermissions(): Promise<PermissionTreeNode[]> {
   // 构建树结构
   const permissionMap = new Map<string, PermissionTreeNode>()
   const rootPermissions: PermissionTreeNode[] = []
+  const orphanedPermissions: PermissionTreeNode[] = []
 
   // 初始化所有权限节点
   permissions.forEach(permission => {
     permissionMap.set(permission.id, { ...permission, children: [] })
   })
 
+  // 按层级排序，确保父权限先处理
+  const sortedPermissions = [...permissions].sort((a, b) => {
+    if (!a.parentId && b.parentId) return -1
+    if (a.parentId && !b.parentId) return 1
+    // 按order字段排序
+    if (a.order !== b.order) return a.order - b.order
+    return 0
+  })
+
   // 构建父子关系
-  permissions.forEach(permission => {
+  sortedPermissions.forEach(permission => {
     const node = permissionMap.get(permission.id)!
     
     if (permission.parentId) {
       const parent = permissionMap.get(permission.parentId)
       if (parent) {
         parent.children!.push(node)
+      } else {
+        // 父权限不存在，记录为孤立权限
+        console.warn(`Menu permission ${permission.name} (${permission.id}) has missing parent ${permission.parentId}`)
+        (node as any).isOrphaned = true
+        orphanedPermissions.push(node)
       }
     } else {
       rootPermissions.push(node)
     }
   })
 
-  return rootPermissions
+  // 将孤立权限添加到根级别
+  orphanedPermissions.forEach(permission => {
+    rootPermissions.push(permission)
+  })
+
+  // 递归排序子权限
+  const sortChildren = (permissions: PermissionTreeNode[]): PermissionTreeNode[] => {
+    return permissions.sort((a, b) => {
+      // 孤立权限排在后面
+      const aOrphaned = (a as any).isOrphaned
+      const bOrphaned = (b as any).isOrphaned
+      if (aOrphaned && !bOrphaned) return 1
+      if (!aOrphaned && bOrphaned) return -1
+      
+      // 按order字段排序
+      if (a.order !== b.order) return a.order - b.order
+      return a.name.localeCompare(b.name)
+    }).map(permission => ({
+      ...permission,
+      children: permission.children ? sortChildren(permission.children) : []
+    }))
+  }
+
+  const result = sortChildren(rootPermissions)
+  logger.debug(`Built menu permission tree with ${result.length} root permissions, ${orphanedPermissions.length} orphaned`)
+  
+  return result
 }
 
 // 根据权限key获取权限

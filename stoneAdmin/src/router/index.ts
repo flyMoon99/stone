@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useTabsStore } from '@/stores/tabs'
+import { usePermissionStore } from '@/stores/permission'
 
 // 路由配置
 const routes = [
@@ -76,7 +77,7 @@ const routes = [
         meta: {
           title: '角色管理',
           requiresAuth: true,
-          requiresSuperAdmin: true,
+          requiresPermission: 'role.list', // 需要角色列表权限
           keepAlive: true
         }
       },
@@ -153,6 +154,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   const tabsStore = useTabsStore()
+  const permissionStore = usePermissionStore()
   
   // 确保认证状态已初始化
   if (!authStore.isInitialized) {
@@ -188,6 +190,22 @@ router.beforeEach(async (to, from, next) => {
     // 需要超级管理员权限但当前用户不是超级管理员
     next({ name: 'Dashboard' })
     return
+  }
+
+  // 检查特定权限
+  if (to.meta.requiresPermission && !authStore.isSuperAdmin) {
+    // 确保权限数据已加载
+    if (!permissionStore.isInitialized) {
+      await permissionStore.fetchUserPermissions()
+    }
+    
+    // 检查是否有所需权限
+    const requiredPermission = to.meta.requiresPermission as string
+    if (!permissionStore.hasPermission(requiredPermission)) {
+      // 没有所需权限，跳转到首页
+      next({ name: 'Dashboard' })
+      return
+    }
   }
 
   next()

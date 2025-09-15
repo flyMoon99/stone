@@ -321,6 +321,7 @@ interface Permission {
   parentId?: string
   enabled: boolean
   children?: Permission[]
+  isOrphaned?: boolean  // 标识是否为孤立权限（父权限不在当前权限列表中）
 }
 
 interface UserPermissions {
@@ -431,36 +432,84 @@ const buildPermissionTree = (permissions: Permission[]): Permission[] => {
     return []
   }
 
+  console.log('开始构建权限树，权限数量:', permissions.length)
+  
   // 创建权限映射
   const permissionMap = new Map<string, Permission>()
   const rootPermissions: Permission[] = []
+  const orphanedPermissions: Permission[] = []
 
   // 首先将所有权限添加到映射中，并初始化children数组
   permissions.forEach(permission => {
-    permissionMap.set(permission.id, {
+    const permissionWithChildren = {
       ...permission,
-      children: []
-    })
+      children: [] as Permission[]
+    }
+    permissionMap.set(permission.id, permissionWithChildren)
+    console.log(`映射权限: ${permission.name} (${permission.id}) - 父权限ID: ${permission.parentId || '无'}`)
+  })
+
+  // 按层级排序，确保父权限先处理
+  const sortedPermissions = [...permissions].sort((a, b) => {
+    // 没有父权限的排在前面
+    if (!a.parentId && b.parentId) return -1
+    if (a.parentId && !b.parentId) return 1
+    return 0
   })
 
   // 构建树形结构
-  permissions.forEach(permission => {
+  sortedPermissions.forEach(permission => {
     const permissionNode = permissionMap.get(permission.id)!
     
-    if (permission.parentId && permissionMap.has(permission.parentId)) {
-      // 有父权限，添加到父权限的children中
-      const parent = permissionMap.get(permission.parentId)!
-      if (!parent.children) {
-        parent.children = []
+    if (permission.parentId) {
+      // 有父权限ID，尝试找到父权限
+      const parent = permissionMap.get(permission.parentId)
+      if (parent) {
+        // 父权限存在，添加到父权限的children中
+        if (!parent.children) {
+          parent.children = []
+        }
+        parent.children.push(permissionNode)
+        console.log(`添加子权限: ${permission.name} -> 父权限: ${parent.name}`)
+      } else {
+        // 父权限不存在于当前用户权限列表中，作为孤立权限处理
+        console.warn(`权限 ${permission.name} (${permission.id}) 的父权限 ${permission.parentId} 不在用户权限列表中`)
+        orphanedPermissions.push(permissionNode)
       }
-      parent.children.push(permissionNode)
     } else {
-      // 没有父权限或父权限不在用户权限列表中，作为根节点
+      // 没有父权限，作为根节点
       rootPermissions.push(permissionNode)
+      console.log(`添加根权限: ${permission.name}`)
     }
   })
 
-  return rootPermissions
+  // 将孤立权限也添加到根级别，但添加特殊标识
+  orphanedPermissions.forEach(permission => {
+    // 为孤立权限添加特殊标识，便于前端显示
+    permission.isOrphaned = true
+    rootPermissions.push(permission)
+    console.log(`添加孤立权限到根级别: ${permission.name}`)
+  })
+
+  // 递归排序子权限
+  const sortChildren = (permissions: Permission[]): Permission[] => {
+    return permissions.sort((a, b) => {
+      // 孤立权限排在后面
+      if (a.isOrphaned && !b.isOrphaned) return 1
+      if (!a.isOrphaned && b.isOrphaned) return -1
+      // 按名称排序
+      return a.name.localeCompare(b.name)
+    }).map(permission => ({
+      ...permission,
+      children: permission.children ? sortChildren(permission.children) : []
+    }))
+  }
+
+  const result = sortChildren(rootPermissions)
+  console.log('权限树构建完成，根权限数量:', result.length)
+  console.log('权限树结构:', result)
+  
+  return result
 }
 
 // 表格列配置
@@ -561,7 +610,22 @@ const columns: DataTableColumns<Admin> = [
 
 // 权限树渲染函数
 const renderPermissionLabel = ({ option }: { option: Permission }) => {
-  return h('span', { style: 'font-weight: 500;' }, option.name)
+  const labelStyle = option.isOrphaned 
+    ? 'font-weight: 500; color: #faad14; font-style: italic;' 
+    : 'font-weight: 500;'
+  
+  const elements = [h('span', { style: labelStyle }, option.name)]
+  
+  // 为孤立权限添加标识
+  if (option.isOrphaned) {
+    elements.push(
+      h('span', { 
+        style: 'margin-left: 8px; font-size: 12px; color: #faad14; background: #fff7e6; padding: 2px 6px; border-radius: 3px; border: 1px solid #ffd591;' 
+      }, '孤立权限')
+    )
+  }
+  
+  return h('div', { style: 'display: flex; align-items: center;' }, elements)
 }
 
 const renderPermissionPrefix = ({ option }: { option: Permission }) => {
@@ -709,33 +773,72 @@ const handleViewPermissions = async (user: Admin) => {
   try {
     permissionLoading.value = true
     
+    console.log(`[权限查看] 开始获取用户权限: ${user.account} (${user.id})`)
+    
     // 获取用户角色
     const rolesResponse = await getUserRoles(user.id)
     if (rolesResponse.success) {
       userRoles.value = rolesResponse.data
+      console.log(`[权限查看] 用户角色数量: ${rolesResponse.data.length}`)
     }
     
-    // 获取用户权限
-    const permissionsResponse = await getUserPermissions(user.id)
+    // 强制从服务器获取最新的用户权限（不使用缓存）
+    const permissionsResponse = await getUserPermissions(user.id, true)
     if (permissionsResponse.success) {
       // 将扁平的权限数据转换为树形结构
       const flatPermissions = permissionsResponse.data.permissions || []
+      
+      // 详细调试信息：打印权限数据
+      console.log(`[权限查看] 用户权限数据:`, flatPermissions)
+      console.log(`[权限查看] 权限数量: ${flatPermissions.length}`)
+      
+      // 检查权限的父子关系和数据完整性
+      console.log(`[权限查看] 权限详细信息:`)
+      flatPermissions.forEach((p, index) => {
+        console.log(`  ${index + 1}. 权限: ${p.name} (${p.key})`)
+        console.log(`     - ID: ${p.id}`)
+        console.log(`     - 类型: ${p.type}`)
+        console.log(`     - 父权限ID: ${p.parentId || '无'}`)
+        console.log(`     - 启用状态: ${p.enabled}`)
+      })
+      
+      // 检查是否存在父子关系
+      const hasParentChild = flatPermissions.some(p => p.parentId)
+      console.log(`[权限查看] 是否存在父子关系: ${hasParentChild}`)
+      
+      if (!hasParentChild && flatPermissions.length > 0) {
+        console.warn(`[权限查看] 警告: 所有权限都没有父权限ID，可能存在数据问题`)
+      }
+      
+      // 构建权限树
+      console.log(`[权限查看] 开始构建权限树...`)
       userPermissionTree.value = buildPermissionTree(flatPermissions)
+      console.log(`[权限查看] 构建的权限树:`, userPermissionTree.value)
+      console.log(`[权限查看] 根权限数量: ${userPermissionTree.value.length}`)
+      
       // 默认展开第一层
       permissionExpandedKeys.value = userPermissionTree.value.map(p => p.id)
+      console.log(`[权限查看] 展开的权限键: ${permissionExpandedKeys.value.join(', ')}`)
+    } else {
+      console.error(`[权限查看] 获取用户权限失败:`, permissionsResponse.message)
     }
     
     // 获取用户菜单权限
     const menuResponse = await getUserMenuPermissions(user.id)
     if (menuResponse.success) {
       userMenuPermissions.value = menuResponse.data || []
+      console.log(`[权限查看] 菜单权限数量: ${userMenuPermissions.value.length}`)
       // 默认展开第一层
       menuExpandedKeys.value = userMenuPermissions.value.map(p => p.id)
+    } else {
+      console.error(`[权限查看] 获取菜单权限失败:`, menuResponse.message)
     }
   } catch (error) {
+    console.error(`[权限查看] 获取用户权限异常:`, error)
     message.error('获取用户权限失败')
   } finally {
     permissionLoading.value = false
+    console.log(`[权限查看] 权限获取流程完成`)
   }
 }
 

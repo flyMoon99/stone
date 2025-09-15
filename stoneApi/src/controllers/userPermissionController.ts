@@ -43,13 +43,34 @@ export const assignRolesToUserController = async (req: Request, res: Response, n
       )
     }
 
+    // 获取操作者信息（从JWT token中获取）
+    const operatorId = (req as any).user?.id
+    const operatorAccount = (req as any).user?.account
+    
+    // 记录审计日志
+    logger.info(`[用户角色变更审计] 操作者: ${operatorAccount || 'Unknown'} (${operatorId || 'Unknown'})`)
+    logger.info(`[用户角色变更审计] 操作类型: 用户角色分配`)
+    logger.info(`[用户角色变更审计] 目标用户ID: ${idValue.id}`)
+    logger.info(`[用户角色变更审计] 分配角色数量: ${assignValue.roleIds.length}`)
+    logger.info(`[用户角色变更审计] 角色ID列表: ${assignValue.roleIds.join(', ')}`)
+    logger.info(`[用户角色变更审计] 操作时间: ${new Date().toISOString()}`)
+    logger.info(`[用户角色变更审计] 客户端IP: ${req.ip || req.connection.remoteAddress}`)
+
     // 分配角色
     await assignRolesToUser(idValue.id, assignValue.roleIds)
+    
+    // 记录操作完成
+    logger.info(`[用户角色变更审计] 操作完成: 用户角色分配成功 - 用户ID: ${idValue.id}`)
     
     res.json(createSuccessResponse(null, 'Roles assigned to user successfully'))
     return
   } catch (error) {
     logger.error('Assign roles to user error:', error)
+    
+    // 记录操作失败的审计日志
+    const operatorId = (req as any).user?.id
+    const operatorAccount = (req as any).user?.account
+    logger.error(`[用户角色变更审计] 操作失败: 用户角色分配失败 - 操作者: ${operatorAccount || 'Unknown'} (${operatorId || 'Unknown'}) - 错误: ${error instanceof Error ? error.message : 'Unknown error'}`)
     
     const message = error instanceof Error ? error.message : 'Failed to assign roles'
     const statusCode = ['用户不存在', '部分角色不存在或已禁用'].includes(message) 

@@ -240,6 +240,40 @@ export class PermissionCacheService {
     rolePermissionKeys.forEach(key => this.cache.delete(key))
   }
 
+  // 清除与特定角色相关的所有用户权限缓存
+  async clearRoleRelatedUserCache(roleId: string): Promise<void> {
+    console.log(`[Cache] Starting to clear cache for role: ${roleId}`)
+    
+    // 首先清除角色自身的缓存
+    this.clearRoleCache(roleId)
+    console.log(`[Cache] Cleared role cache for: ${roleId}`)
+    
+    // 获取所有拥有该角色的用户ID
+    const { PrismaClient } = require('@prisma/client')
+    const prisma = new PrismaClient()
+    
+    try {
+      const adminRoles = await prisma.adminRole.findMany({
+        where: { roleId },
+        select: { adminId: true }
+      })
+      
+      console.log(`[Cache] Found ${adminRoles.length} users with role ${roleId}`)
+      
+      // 清除每个用户的权限缓存
+      adminRoles.forEach((adminRole: { adminId: string }) => {
+        console.log(`[Cache] Clearing cache for user: ${adminRole.adminId}`)
+        this.clearUserCache(adminRole.adminId)
+      })
+      
+      console.log(`[Cache] Completed clearing cache for role: ${roleId}`)
+      await prisma.$disconnect()
+    } catch (error) {
+      console.error('Error clearing role-related user cache:', error)
+      await prisma.$disconnect()
+    }
+  }
+
   // 获取缓存统计信息
   getCacheStats(): any {
     const stats = this.cache.getStats()

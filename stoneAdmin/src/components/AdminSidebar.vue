@@ -30,6 +30,7 @@ import {
 } from '@vicons/ionicons5'
 import { useAuthStore } from '@/stores/auth'
 import { useTabsStore } from '@/stores/tabs'
+import { usePermissionStore } from '@/stores/permission'
 
 interface Props {
   collapsed: boolean
@@ -41,6 +42,7 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const tabsStore = useTabsStore()
+const permissionStore = usePermissionStore()
 
 // 当前激活的菜单项
 const activeKey = computed(() => {
@@ -70,49 +72,66 @@ const menuOptions = computed(() => {
       label: '首页',
       key: '/dashboard',
       icon: () => h(NIcon, { size: 16 }, { default: () => h(GridOutline) })
-    },
-    {
+    }
+  ]
+
+  // 动态生成用户管理菜单
+  const userManagementChildren = []
+  
+  // 管理员管理 - 只有超级管理员可见
+  if (authStore.isSuperAdmin) {
+    userManagementChildren.push({
+      label: '管理员管理',
+      key: '/admin/admins',
+      icon: () => h(NIcon, { size: 16 }, { default: () => h(ShieldCheckmarkOutline) })
+    })
+  }
+  
+  // 会员管理 - 检查用户管理权限
+  if (permissionStore.hasMenuPermission('user') || authStore.isSuperAdmin) {
+    userManagementChildren.push({
+      label: '会员管理',
+      key: '/admin/members',
+      icon: () => h(NIcon, { size: 16 }, { default: () => h(PersonOutline) })
+    })
+  }
+  
+  // 角色管理 - 检查角色管理权限
+  if (permissionStore.hasMenuPermission('role') || authStore.isSuperAdmin) {
+    userManagementChildren.push({
+      label: '角色管理',
+      key: '/admin/roles',
+      icon: () => h(NIcon, { size: 16 }, { default: () => h(KeyOutline) })
+    })
+  }
+  
+  // 权限管理 - 只有超级管理员可见
+  if (authStore.isSuperAdmin) {
+    userManagementChildren.push({
+      label: '权限管理',
+      key: '/admin/permissions',
+      icon: () => h(NIcon, { size: 16 }, { default: () => h(LockClosedOutline) })
+    })
+  }
+  
+  // 用户权限分配 - 只有超级管理员可见
+  if (authStore.isSuperAdmin) {
+    userManagementChildren.push({
+      label: '用户权限分配',
+      key: '/admin/user-permissions',
+      icon: () => h(NIcon, { size: 16 }, { default: () => h(PersonAddOutline) })
+    })
+  }
+
+  // 如果有用户管理相关的子菜单，则添加用户管理菜单组
+  if (userManagementChildren.length > 0) {
+    baseOptions.push({
       label: '用户管理',
       key: 'user-management',
       icon: () => h(NIcon, { size: 16 }, { default: () => h(PeopleOutline) }),
-      children: [
-        {
-          label: '管理员管理',
-          key: '/admin/admins',
-          icon: () => h(NIcon, { size: 16 }, { default: () => h(ShieldCheckmarkOutline) }),
-          show: authStore.isSuperAdmin
-        },
-        {
-          label: '会员管理',
-          key: '/admin/members',
-          icon: () => h(NIcon, { size: 16 }, { default: () => h(PersonOutline) })
-        },
-        {
-          label: '角色管理',
-          key: '/admin/roles',
-          icon: () => h(NIcon, { size: 16 }, { default: () => h(KeyOutline) }),
-          show: authStore.isSuperAdmin
-        },
-        {
-          label: '权限管理',
-          key: '/admin/permissions',
-          icon: () => h(NIcon, { size: 16 }, { default: () => h(LockClosedOutline) }),
-          show: authStore.isSuperAdmin
-        },
-        {
-          label: '用户权限分配',
-          key: '/admin/user-permissions',
-          icon: () => h(NIcon, { size: 16 }, { default: () => h(PersonAddOutline) }),
-          show: authStore.isSuperAdmin
-        }
-      ].filter(item => item.show !== false)
-    },
-    {
-      label: '首页-1',
-      key: '/dashboard',
-      icon: () => h(NIcon, { size: 16 }, { default: () => h(GridOutline) })
-    }
-  ]
+      children: userManagementChildren
+    })
+  }
 
   return baseOptions
 })
