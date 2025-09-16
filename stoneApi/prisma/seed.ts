@@ -1,5 +1,5 @@
 import { PrismaClient, AdminType, UserStatus, PermissionType } from '@prisma/client'
-import bcrypt from 'bcryptjs'
+import * as bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -20,126 +20,170 @@ async function main() {
     },
   })
 
-  const adminRole = await prisma.role.upsert({
-    where: { code: 'admin' },
-    update: {},
-    create: {
-      name: '系统管理员',
-      code: 'admin',
-      description: '拥有大部分管理权限的系统管理员',
-      status: true,
-    },
-  })
-
-  const userManagerRole = await prisma.role.upsert({
-    where: { code: 'user_manager' },
-    update: {},
-    create: {
-      name: '用户管理员',
-      code: 'user_manager',
-      description: '负责用户管理的管理员',
-      status: true,
-    },
-  })
-
   console.log('✅ 角色创建完成')
 
   // ==================== 创建权限 ====================
   console.log('🔐 创建系统权限...')
 
-  // 系统管理权限
-  const systemMenuPermission = await prisma.permission.upsert({
-    where: { key: 'system' },
+  // 1. 管理员管理权限
+  const adminMenuPermission = await prisma.permission.upsert({
+    where: { key: 'admin' },
     update: {},
     create: {
-      key: 'system',
-      name: '系统管理',
+      key: 'admin',
+      name: '管理员管理',
       type: PermissionType.MENU,
       order: 1,
       enabled: true,
     },
   })
 
-  const systemConfigPermission = await prisma.permission.upsert({
-    where: { key: 'system.config' },
+  const adminListPermission = await prisma.permission.upsert({
+    where: { key: 'admin.list' },
     update: {},
     create: {
-      key: 'system.config',
-      name: '系统配置',
+      key: 'admin.list',
+      name: '管理员列表',
       type: PermissionType.PAGE,
-      parentId: systemMenuPermission.id,
+      parentId: adminMenuPermission.id,
+      path: '/admin/admins',
       order: 1,
       enabled: true,
     },
   })
 
-  // 用户管理权限
-  const userMenuPermission = await prisma.permission.upsert({
-    where: { key: 'user' },
+  const adminCreatePermission = await prisma.permission.upsert({
+    where: { key: 'admin.create' },
     update: {},
     create: {
-      key: 'user',
-      name: '用户管理',
-      type: PermissionType.MENU,
+      key: 'admin.create',
+      name: '创建管理员',
+      type: PermissionType.ACTION,
+      parentId: adminListPermission.id,
+      order: 1,
+      enabled: true,
+    },
+  })
+
+  const adminUpdatePermission = await prisma.permission.upsert({
+    where: { key: 'admin.update' },
+    update: {},
+    create: {
+      key: 'admin.update',
+      name: '编辑管理员',
+      type: PermissionType.ACTION,
+      parentId: adminListPermission.id,
       order: 2,
       enabled: true,
     },
   })
 
-  const userListPermission = await prisma.permission.upsert({
-    where: { key: 'user.list' },
+  const adminBatchUpdatePermission = await prisma.permission.upsert({
+    where: { key: 'admin.batch_update' },
     update: {},
     create: {
-      key: 'user.list',
-      name: '用户列表',
-      type: PermissionType.PAGE,
-      parentId: userMenuPermission.id,
-      path: '/admin/users',
-      order: 1,
-      enabled: true,
-    },
-  })
-
-  const userCreatePermission = await prisma.permission.upsert({
-    where: { key: 'user.create' },
-    update: {},
-    create: {
-      key: 'user.create',
-      name: '创建用户',
+      key: 'admin.batch_update',
+      name: '批量启用/禁用管理员',
       type: PermissionType.ACTION,
-      parentId: userListPermission.id,
-      order: 1,
-      enabled: true,
-    },
-  })
-
-  const userUpdatePermission = await prisma.permission.upsert({
-    where: { key: 'user.update' },
-    update: {},
-    create: {
-      key: 'user.update',
-      name: '编辑用户',
-      type: PermissionType.ACTION,
-      parentId: userListPermission.id,
-      order: 2,
-      enabled: true,
-    },
-  })
-
-  const userDeletePermission = await prisma.permission.upsert({
-    where: { key: 'user.delete' },
-    update: {},
-    create: {
-      key: 'user.delete',
-      name: '删除用户',
-      type: PermissionType.ACTION,
-      parentId: userListPermission.id,
+      parentId: adminListPermission.id,
       order: 3,
       enabled: true,
     },
   })
 
-  // 角色管理权限
+  const adminDeletePermission = await prisma.permission.upsert({
+    where: { key: 'admin.delete' },
+    update: {},
+    create: {
+      key: 'admin.delete',
+      name: '删除管理员',
+      type: PermissionType.ACTION,
+      parentId: adminListPermission.id,
+      order: 4,
+      enabled: true,
+    },
+  })
+
+  // 2. 会员管理权限
+  const memberMenuPermission = await prisma.permission.upsert({
+    where: { key: 'member' },
+    update: {},
+    create: {
+      key: 'member',
+      name: '会员管理',
+      type: PermissionType.MENU,
+      order: 2,
+      enabled: true,
+    },
+  })
+
+  const memberListPermission = await prisma.permission.upsert({
+    where: { key: 'member.list' },
+    update: {},
+    create: {
+      key: 'member.list',
+      name: '会员列表',
+      type: PermissionType.PAGE,
+      parentId: memberMenuPermission.id,
+      path: '/admin/members',
+      order: 1,
+      enabled: true,
+    },
+  })
+
+  const memberCreatePermission = await prisma.permission.upsert({
+    where: { key: 'member.create' },
+    update: {},
+    create: {
+      key: 'member.create',
+      name: '创建会员',
+      type: PermissionType.ACTION,
+      parentId: memberListPermission.id,
+      order: 1,
+      enabled: true,
+    },
+  })
+
+  const memberUpdatePermission = await prisma.permission.upsert({
+    where: { key: 'member.update' },
+    update: {},
+    create: {
+      key: 'member.update',
+      name: '编辑会员',
+      type: PermissionType.ACTION,
+      parentId: memberListPermission.id,
+      order: 2,
+      enabled: true,
+    },
+  })
+
+  const memberBatchUpdatePermission = await prisma.permission.upsert({
+    where: { key: 'member.batch_update' },
+    update: {},
+    create: {
+      key: 'member.batch_update',
+      name: '批量启用/禁用会员',
+      type: PermissionType.ACTION,
+      parentId: memberListPermission.id,
+      order: 3,
+      enabled: true,
+    },
+  })
+
+  const memberViewPermission = await prisma.permission.upsert({
+    where: { key: 'member.view' },
+    update: {},
+    create: {
+      key: 'member.view',
+      name: '查看会员详情',
+      type: PermissionType.ACTION,
+      parentId: memberListPermission.id,
+      order: 4,
+      enabled: true,
+    },
+  })
+
+  // 3. 角色管理权限
   const roleMenuPermission = await prisma.permission.upsert({
     where: { key: 'role' },
     update: {},
@@ -205,6 +249,177 @@ async function main() {
     },
   })
 
+  const roleBatchUpdatePermission = await prisma.permission.upsert({
+    where: { key: 'role.batch_update' },
+    update: {},
+    create: {
+      key: 'role.batch_update',
+      name: '批量启用/禁用角色',
+      type: PermissionType.ACTION,
+      parentId: roleListPermission.id,
+      order: 4,
+      enabled: true,
+    },
+  })
+
+  const roleAssignPermissionPermission = await prisma.permission.upsert({
+    where: { key: 'role.assign_permission' },
+    update: {},
+    create: {
+      key: 'role.assign_permission',
+      name: '分配权限',
+      type: PermissionType.ACTION,
+      parentId: roleListPermission.id,
+      order: 5,
+      enabled: true,
+    },
+  })
+
+  // 4. 权限管理权限
+  const permissionMenuPermission = await prisma.permission.upsert({
+    where: { key: 'permission' },
+    update: {},
+    create: {
+      key: 'permission',
+      name: '权限管理',
+      type: PermissionType.MENU,
+      order: 4,
+      enabled: true,
+    },
+  })
+
+  const permissionListPermission = await prisma.permission.upsert({
+    where: { key: 'permission.list' },
+    update: {},
+    create: {
+      key: 'permission.list',
+      name: '权限列表',
+      type: PermissionType.PAGE,
+      parentId: permissionMenuPermission.id,
+      path: '/admin/permissions',
+      order: 1,
+      enabled: true,
+    },
+  })
+
+  const permissionCreatePermission = await prisma.permission.upsert({
+    where: { key: 'permission.create' },
+    update: {},
+    create: {
+      key: 'permission.create',
+      name: '创建权限',
+      type: PermissionType.ACTION,
+      parentId: permissionListPermission.id,
+      order: 1,
+      enabled: true,
+    },
+  })
+
+  const permissionUpdatePermission = await prisma.permission.upsert({
+    where: { key: 'permission.update' },
+    update: {},
+    create: {
+      key: 'permission.update',
+      name: '编辑权限',
+      type: PermissionType.ACTION,
+      parentId: permissionListPermission.id,
+      order: 2,
+      enabled: true,
+    },
+  })
+
+  const permissionDeletePermission = await prisma.permission.upsert({
+    where: { key: 'permission.delete' },
+    update: {},
+    create: {
+      key: 'permission.delete',
+      name: '删除权限',
+      type: PermissionType.ACTION,
+      parentId: permissionListPermission.id,
+      order: 3,
+      enabled: true,
+    },
+  })
+
+  const permissionBatchUpdatePermission = await prisma.permission.upsert({
+    where: { key: 'permission.batch_update' },
+    update: {},
+    create: {
+      key: 'permission.batch_update',
+      name: '批量启用/禁用权限',
+      type: PermissionType.ACTION,
+      parentId: permissionListPermission.id,
+      order: 4,
+      enabled: true,
+    },
+  })
+
+  // 5. 用户权限分配权限
+  const userPermissionMenuPermission = await prisma.permission.upsert({
+    where: { key: 'user-permission' },
+    update: {},
+    create: {
+      key: 'user-permission',
+      name: '用户权限分配',
+      type: PermissionType.MENU,
+      order: 5,
+      enabled: true,
+    },
+  })
+
+  const userPermissionListPermission = await prisma.permission.upsert({
+    where: { key: 'user-permission.list' },
+    update: {},
+    create: {
+      key: 'user-permission.list',
+      name: '用户权限列表',
+      type: PermissionType.PAGE,
+      parentId: userPermissionMenuPermission.id,
+      path: '/admin/user-permissions',
+      order: 1,
+      enabled: true,
+    },
+  })
+
+  const userPermissionAssignRolePermission = await prisma.permission.upsert({
+    where: { key: 'user-permission.assign_role' },
+    update: {},
+    create: {
+      key: 'user-permission.assign_role',
+      name: '分配角色',
+      type: PermissionType.ACTION,
+      parentId: userPermissionListPermission.id,
+      order: 1,
+      enabled: true,
+    },
+  })
+
+  const userPermissionBatchAssignRolePermission = await prisma.permission.upsert({
+    where: { key: 'user-permission.batch_assign_role' },
+    update: {},
+    create: {
+      key: 'user-permission.batch_assign_role',
+      name: '批量分配角色',
+      type: PermissionType.ACTION,
+      parentId: userPermissionListPermission.id,
+      order: 2,
+      enabled: true,
+    },
+  })
+
+  const userPermissionViewPermission = await prisma.permission.upsert({
+    where: { key: 'user-permission.view' },
+    update: {},
+    create: {
+      key: 'user-permission.view',
+      name: '查看用户权限',
+      type: PermissionType.ACTION,
+      parentId: userPermissionListPermission.id,
+      order: 3,
+      enabled: true,
+    },
+  })
+
   console.log('✅ 权限创建完成')
 
   // ==================== 分配角色权限 ====================
@@ -223,42 +438,6 @@ async function main() {
       update: {},
       create: {
         roleId: superAdminRole.id,
-        permissionId: permission.id,
-      },
-    })
-  }
-
-  // 系统管理员权限（除了系统配置）
-  const adminPermissions = allPermissions.filter(p => p.key !== 'system.config')
-  for (const permission of adminPermissions) {
-    await prisma.rolePermission.upsert({
-      where: {
-        roleId_permissionId: {
-          roleId: adminRole.id,
-          permissionId: permission.id,
-        },
-      },
-      update: {},
-      create: {
-        roleId: adminRole.id,
-        permissionId: permission.id,
-      },
-    })
-  }
-
-  // 用户管理员只有用户相关权限
-  const userPermissions = allPermissions.filter(p => p.key.startsWith('user'))
-  for (const permission of userPermissions) {
-    await prisma.rolePermission.upsert({
-      where: {
-        roleId_permissionId: {
-          roleId: userManagerRole.id,
-          permissionId: permission.id,
-        },
-      },
-      update: {},
-      create: {
-        roleId: userManagerRole.id,
         permissionId: permission.id,
       },
     })
@@ -302,72 +481,6 @@ async function main() {
 
   console.log('✅ 创建超级管理员:', superAdmin)
 
-  // 创建测试普通管理员
-  const testAdminPassword = await bcrypt.hash('testadmin123', 10)
-  
-  const testAdmin = await prisma.admin.upsert({
-    where: { account: 'testadmin' },
-    update: {
-      password: testAdminPassword,
-    },
-    create: {
-      account: 'testadmin',
-      password: testAdminPassword,
-      type: AdminType.ADMIN,
-      status: UserStatus.ACTIVE,
-    },
-  })
-
-  // 分配系统管理员角色
-  await prisma.adminRole.upsert({
-    where: {
-      adminId_roleId: {
-        adminId: testAdmin.id,
-        roleId: adminRole.id,
-      },
-    },
-    update: {},
-    create: {
-      adminId: testAdmin.id,
-      roleId: adminRole.id,
-    },
-  })
-
-  console.log('✅ 创建测试管理员:', testAdmin)
-
-  // 创建用户管理员
-  const userManagerPassword = await bcrypt.hash('usermanager123', 10)
-  
-  const userManager = await prisma.admin.upsert({
-    where: { account: 'usermanager' },
-    update: {
-      password: userManagerPassword,
-    },
-    create: {
-      account: 'usermanager',
-      password: userManagerPassword,
-      type: AdminType.ADMIN,
-      status: UserStatus.ACTIVE,
-    },
-  })
-
-  // 分配用户管理员角色
-  await prisma.adminRole.upsert({
-    where: {
-      adminId_roleId: {
-        adminId: userManager.id,
-        roleId: userManagerRole.id,
-      },
-    },
-    update: {},
-    create: {
-      adminId: userManager.id,
-      roleId: userManagerRole.id,
-    },
-  })
-
-  console.log('✅ 创建用户管理员:', userManager)
-
   // ==================== 创建测试会员 ====================
   const testMemberPassword = await bcrypt.hash('testmember123', 10)
   
@@ -395,9 +508,9 @@ async function main() {
       details: {
         message: 'RBAC权限系统种子数据初始化完成',
         timestamp: new Date().toISOString(),
-        roles: 3,
+        roles: 1,
         permissions: allPermissions.length,
-        admins: 3
+        admins: 1
       },
       ip: '127.0.0.1',
       userAgent: 'Prisma Seed Script'
@@ -406,9 +519,9 @@ async function main() {
 
   console.log('🎉 RBAC权限系统种子数据初始化完成!')
   console.log('📊 统计信息:')
-  console.log(`   - 角色数量: 3`)
+  console.log(`   - 角色数量: 1`)
   console.log(`   - 权限数量: ${allPermissions.length}`)
-  console.log(`   - 管理员数量: 3`)
+  console.log(`   - 管理员数量: 1`)
   console.log(`   - 会员数量: 1`)
 }
 

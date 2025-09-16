@@ -70,12 +70,7 @@ export async function assignRolesToUser(userId: string, roleIds: string[]): Prom
 
 // 获取用户的所有权限信息
 export async function getUserPermissions(userId: string): Promise<UserPermissionInfo | null> {
-  // 尝试从缓存获取
-  const cachedPermissions = permissionCache.getUserPermissions(userId)
-  if (cachedPermissions) {
-    logger.debug(`Retrieved user permissions from cache for user: ${userId}`)
-    return cachedPermissions
-  }
+  logger.debug(`Getting user permissions from database for user: ${userId}`)
 
   // 获取用户及其角色和权限信息
   const userWithRolesAndPermissions = await prisma.admin.findUnique({
@@ -192,8 +187,8 @@ export async function getUserPermissions(userId: string): Promise<UserPermission
     name: p.name,
     type: p.type,
     parentId: p.parentId,
-    path: p.path,
-    method: p.method,
+    path: p.path || undefined,
+    method: p.method || undefined,
     enabled: p.enabled
   }))
 
@@ -216,10 +211,6 @@ export async function getUserPermissions(userId: string): Promise<UserPermission
     permissions,
     permissionKeys
   }
-
-  // 缓存用户权限信息
-  permissionCache.cacheUserPermissions(userId, userPermissionInfo)
-  logger.debug(`Cached user permissions for user: ${userId}`)
 
   return userPermissionInfo
 }

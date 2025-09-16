@@ -136,6 +136,12 @@ export class PermissionCacheService {
     return this.cache.get(key)
   }
 
+  // 清除用户权限缓存
+  clearUserPermissions(userId: string): void {
+    const key = `user_permissions:${userId}`
+    this.cache.delete(key)
+  }
+
   // 缓存用户角色
   cacheUserRoles(userId: string, roles: any[]): void {
     const key = `user_roles:${userId}`

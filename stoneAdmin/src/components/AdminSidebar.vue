@@ -87,8 +87,8 @@ const menuOptions = computed(() => {
     })
   }
   
-  // 会员管理 - 检查用户管理权限和角色
-  if (authStore.isSuperAdmin || (permissionStore.hasMenuPermission('user') && permissionStore.roles.length > 0)) {
+  // 会员管理 - 检查会员管理权限和角色
+  if (authStore.isSuperAdmin || (permissionStore.hasMenuPermission('member') && permissionStore.roles.length > 0)) {
     userManagementChildren.push({
       label: '会员管理',
       key: '/admin/members',

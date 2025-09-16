@@ -143,20 +143,22 @@ export const usePermissionChecker = () => {
 
 // 权限常量定义
 export const PERMISSIONS = {
-  // 系统管理
-  SYSTEM: {
-    MANAGE: 'system.manage',
-    CONFIG: 'system.config',
-    LOG: 'system.log'
+  // 管理员管理
+  ADMIN: {
+    LIST: 'admin.list',
+    CREATE: 'admin.create',
+    UPDATE: 'admin.update',
+    DELETE: 'admin.delete',
+    BATCH_UPDATE: 'admin.batch_update'
   },
   
-  // 用户管理
-  USER: {
-    LIST: 'user.list',
-    CREATE: 'user.create',
-    UPDATE: 'user.update',
-    DELETE: 'user.delete',
-    ASSIGN_ROLE: 'user.assign_role'
+  // 会员管理
+  MEMBER: {
+    LIST: 'member.list',
+    CREATE: 'member.create',
+    UPDATE: 'member.update',
+    VIEW: 'member.view',
+    BATCH_UPDATE: 'member.batch_update'
   },
   
   // 角色管理
@@ -165,6 +167,7 @@ export const PERMISSIONS = {
     CREATE: 'role.create',
     UPDATE: 'role.update',
     DELETE: 'role.delete',
+    BATCH_UPDATE: 'role.batch_update',
     ASSIGN_PERMISSION: 'role.assign_permission'
   },
   
@@ -173,15 +176,16 @@ export const PERMISSIONS = {
     LIST: 'permission.list',
     CREATE: 'permission.create',
     UPDATE: 'permission.update',
-    DELETE: 'permission.delete'
+    DELETE: 'permission.delete',
+    BATCH_UPDATE: 'permission.batch_update'
   },
   
-  // 会员管理
-  MEMBER: {
-    LIST: 'user.list',
-    CREATE: 'user.create',
-    UPDATE: 'user.update',
-    DELETE: 'user.delete'
+  // 用户权限分配
+  USER_PERMISSION: {
+    LIST: 'user-permission.list',
+    ASSIGN_ROLE: 'user-permission.assign_role',
+    BATCH_ASSIGN_ROLE: 'user-permission.batch_assign_role',
+    VIEW: 'user-permission.view'
   }
 } as const
 
@@ -194,13 +198,22 @@ export const ROLES = {
 
 // 权限组合定义
 export const PERMISSION_GROUPS = {
-  // 用户管理权限组
-  USER_MANAGEMENT: [
-    PERMISSIONS.USER.LIST,
-    PERMISSIONS.USER.CREATE,
-    PERMISSIONS.USER.UPDATE,
-    PERMISSIONS.USER.DELETE,
-    PERMISSIONS.USER.ASSIGN_ROLE
+  // 管理员管理权限组
+  ADMIN_MANAGEMENT: [
+    PERMISSIONS.ADMIN.LIST,
+    PERMISSIONS.ADMIN.CREATE,
+    PERMISSIONS.ADMIN.UPDATE,
+    PERMISSIONS.ADMIN.DELETE,
+    PERMISSIONS.ADMIN.BATCH_UPDATE
+  ],
+  
+  // 会员管理权限组
+  MEMBER_MANAGEMENT: [
+    PERMISSIONS.MEMBER.LIST,
+    PERMISSIONS.MEMBER.CREATE,
+    PERMISSIONS.MEMBER.UPDATE,
+    PERMISSIONS.MEMBER.VIEW,
+    PERMISSIONS.MEMBER.BATCH_UPDATE
   ],
   
   // 角色管理权限组
@@ -209,6 +222,7 @@ export const PERMISSION_GROUPS = {
     PERMISSIONS.ROLE.CREATE,
     PERMISSIONS.ROLE.UPDATE,
     PERMISSIONS.ROLE.DELETE,
+    PERMISSIONS.ROLE.BATCH_UPDATE,
     PERMISSIONS.ROLE.ASSIGN_PERMISSION
   ],
   
@@ -217,14 +231,16 @@ export const PERMISSION_GROUPS = {
     PERMISSIONS.PERMISSION.LIST,
     PERMISSIONS.PERMISSION.CREATE,
     PERMISSIONS.PERMISSION.UPDATE,
-    PERMISSIONS.PERMISSION.DELETE
+    PERMISSIONS.PERMISSION.DELETE,
+    PERMISSIONS.PERMISSION.BATCH_UPDATE
   ],
   
-  // 系统管理权限组
-  SYSTEM_MANAGEMENT: [
-    PERMISSIONS.SYSTEM.MANAGE,
-    PERMISSIONS.SYSTEM.CONFIG,
-    PERMISSIONS.SYSTEM.LOG
+  // 用户权限分配权限组
+  USER_PERMISSION_MANAGEMENT: [
+    PERMISSIONS.USER_PERMISSION.LIST,
+    PERMISSIONS.USER_PERMISSION.ASSIGN_ROLE,
+    PERMISSIONS.USER_PERMISSION.BATCH_ASSIGN_ROLE,
+    PERMISSIONS.USER_PERMISSION.VIEW
   ]
 } as const
 
