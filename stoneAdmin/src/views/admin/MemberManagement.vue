@@ -52,12 +52,14 @@
               添加会员
             </n-button>
             <n-button 
+              v-permission="PERMISSIONS.MEMBER.UPDATE"
               :disabled="!selectedRowKeys.length"
               @click="handleBatchStatusUpdate('ACTIVE')"
             >
               批量启用
             </n-button>
             <n-button 
+              v-permission="PERMISSIONS.MEMBER.UPDATE"
               :disabled="!selectedRowKeys.length"
               @click="handleBatchStatusUpdate('INACTIVE')"
             >

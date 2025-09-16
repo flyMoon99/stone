@@ -104,6 +104,11 @@ export const usePermissionStore = defineStore('permission', () => {
     
     if (!userPermissions.value) return false
     
+    // 无角色用户不应该有任何权限
+    if (!userPermissions.value.roles || userPermissions.value.roles.length === 0) {
+      return false
+    }
+    
     // 检查权限键
     return userPermissions.value.permissionKeys.includes(permission)
   }
@@ -118,6 +123,11 @@ export const usePermissionStore = defineStore('permission', () => {
     if (authStore.isSuperAdmin) return true
     
     if (!userPermissions.value || permissions.length === 0) return false
+    
+    // 无角色用户不应该有任何权限
+    if (!userPermissions.value.roles || userPermissions.value.roles.length === 0) {
+      return false
+    }
     
     // 检查是否拥有任意一个权限
     return permissions.some(permission => 
@@ -135,6 +145,11 @@ export const usePermissionStore = defineStore('permission', () => {
     if (authStore.isSuperAdmin) return true
     
     if (!userPermissions.value || permissions.length === 0) return false
+    
+    // 无角色用户不应该有任何权限
+    if (!userPermissions.value.roles || userPermissions.value.roles.length === 0) {
+      return false
+    }
     
     // 检查是否拥有所有权限
     return permissions.every(permission => 
@@ -184,6 +199,16 @@ export const usePermissionStore = defineStore('permission', () => {
     if (authStore.isSuperAdmin) return true
     
     if (!userPermissions.value) return false
+    
+    // 无角色用户不应该有任何菜单权限
+    if (!userPermissions.value.roles || userPermissions.value.roles.length === 0) {
+      return false
+    }
+    
+    // 没有菜单权限数据时返回false
+    if (!userPermissions.value.menuPermissions || userPermissions.value.menuPermissions.length === 0) {
+      return false
+    }
     
     // 递归检查菜单权限
     const checkMenuRecursive = (menus: Permission[], key: string): boolean => {

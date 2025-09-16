@@ -87,8 +87,8 @@ const menuOptions = computed(() => {
     })
   }
   
-  // 会员管理 - 检查用户管理权限
-  if (permissionStore.hasMenuPermission('user') || authStore.isSuperAdmin) {
+  // 会员管理 - 检查用户管理权限和角色
+  if (authStore.isSuperAdmin || (permissionStore.hasMenuPermission('user') && permissionStore.roles.length > 0)) {
     userManagementChildren.push({
       label: '会员管理',
       key: '/admin/members',
@@ -96,8 +96,8 @@ const menuOptions = computed(() => {
     })
   }
   
-  // 角色管理 - 检查角色管理权限
-  if (permissionStore.hasMenuPermission('role') || authStore.isSuperAdmin) {
+  // 角色管理 - 检查角色管理权限和角色
+  if (authStore.isSuperAdmin || (permissionStore.hasMenuPermission('role') && permissionStore.roles.length > 0)) {
     userManagementChildren.push({
       label: '角色管理',
       key: '/admin/roles',

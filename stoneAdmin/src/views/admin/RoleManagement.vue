@@ -41,19 +41,25 @@
         <div class="table-header">
           <span>角色列表</span>
           <div class="table-actions">
-            <n-button type="primary" @click="handleCreate">
+            <n-button 
+              v-permission="PERMISSIONS.ROLE.CREATE"
+              type="primary" 
+              @click="handleCreate"
+            >
               <n-icon :size="16" class="mr-1">
                 <AddOutline />
               </n-icon>
               添加角色
             </n-button>
             <n-button 
+              v-permission="PERMISSIONS.ROLE.UPDATE"
               :disabled="!selectedRowKeys.length"
               @click="handleBatchStatusUpdate(true)"
             >
               批量启用
             </n-button>
             <n-button 
+              v-permission="PERMISSIONS.ROLE.UPDATE"
               :disabled="!selectedRowKeys.length"
               @click="handleBatchStatusUpdate(false)"
             >
@@ -189,6 +195,8 @@ import {
 import type { FormInst, FormRules, DataTableColumns, TreeOption } from 'naive-ui'
 import { useMessage, useDialog, NButton, NTag, NIcon } from 'naive-ui'
 import { formatDate } from '@stone/shared'
+import { PERMISSIONS } from '@/utils/permission'
+import { usePermissionStore } from '@/stores/permission'
 import { 
   getRoleList, 
   createRole, 
@@ -228,6 +236,7 @@ interface Permission {
 
 const message = useMessage()
 const dialog = useDialog()
+const permissionStore = usePermissionStore()
 
 // 响应式数据
 const loading = ref(false)
@@ -347,40 +356,59 @@ const columns: DataTableColumns<Role> = [
     key: 'actions',
     width: 200,
     render: (row) => {
-      return [
-        h(
-          NButton,
-          {
-            size: 'small',
-            type: 'primary',
-            ghost: true,
-            onClick: () => handleEdit(row),
-            style: { marginRight: '8px' }
-          },
-          { default: () => '编辑', icon: () => h(NIcon, null, { default: () => h(CreateOutline) }) }
-        ),
-        h(
-          NButton,
-          {
-            size: 'small',
-            type: 'info',
-            ghost: true,
-            onClick: () => handleAssignPermissions(row),
-            style: { marginRight: '8px' }
-          },
-          { default: () => '权限', icon: () => h(NIcon, null, { default: () => h(KeyOutline) }) }
-        ),
-        h(
-          NButton,
-          {
-            size: 'small',
-            type: 'error',
-            ghost: true,
-            onClick: () => handleDelete(row)
-          },
-          { default: () => '删除', icon: () => h(NIcon, null, { default: () => h(TrashOutline) }) }
+      const buttons = []
+      
+      // 编辑按钮 - 需要 role.update 权限
+      if (permissionStore.hasPermission(PERMISSIONS.ROLE.UPDATE)) {
+        buttons.push(
+          h(
+            NButton,
+            {
+              size: 'small',
+              type: 'primary',
+              ghost: true,
+              onClick: () => handleEdit(row),
+              style: { marginRight: '8px' }
+            },
+            { default: () => '编辑', icon: () => h(NIcon, null, { default: () => h(CreateOutline) }) }
+          )
         )
-      ]
+      }
+      
+      // 权限分配按钮 - 需要 role.assign_permission 权限
+      if (permissionStore.hasPermission(PERMISSIONS.ROLE.ASSIGN_PERMISSION)) {
+        buttons.push(
+          h(
+            NButton,
+            {
+              size: 'small',
+              type: 'info',
+              ghost: true,
+              onClick: () => handleAssignPermissions(row),
+              style: { marginRight: '8px' }
+            },
+            { default: () => '权限', icon: () => h(NIcon, null, { default: () => h(KeyOutline) }) }
+          )
+        )
+      }
+      
+      // 删除按钮 - 需要 role.delete 权限
+      if (permissionStore.hasPermission(PERMISSIONS.ROLE.DELETE)) {
+        buttons.push(
+          h(
+            NButton,
+            {
+              size: 'small',
+              type: 'error',
+              ghost: true,
+              onClick: () => handleDelete(row)
+            },
+            { default: () => '删除', icon: () => h(NIcon, null, { default: () => h(TrashOutline) }) }
+          )
+        )
+      }
+      
+      return buttons
     }
   }
 ]

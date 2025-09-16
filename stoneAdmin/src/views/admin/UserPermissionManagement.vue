@@ -973,25 +973,32 @@ onMounted(() => {
 }
 
 .search-card :deep(.n-card__content) {
-  padding-top: 0;
-  padding-bottom: 0;
+  padding: 20px 24px;
 }
 
 .search-form {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  align-items: center;
+  gap: 20px;
+  align-items: flex-end;
+  margin: 0;
 }
 
 .search-form .n-form-item {
   margin-bottom: 0;
+  min-width: 140px;
 }
 
 .search-form .n-form-item--left-labelled {
   display: flex;
   align-items: center;
   white-space: nowrap;
+}
+
+.search-form .n-form-item--left-labelled .n-form-item-label {
+  padding-right: 12px;
+  font-weight: 500;
+  color: #333;
 }
 
 .table-card {
@@ -1074,8 +1081,30 @@ onMounted(() => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .search-card :deep(.n-card__content) {
+    padding: 16px;
+  }
+  
   .search-form {
     flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .search-form .n-form-item {
+    min-width: unset;
+    width: 100%;
+  }
+  
+  .search-form .n-form-item--left-labelled {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .search-form .n-form-item--left-labelled .n-form-item-label {
+    padding-right: 0;
+    padding-bottom: 4px;
   }
   
   .table-header {
