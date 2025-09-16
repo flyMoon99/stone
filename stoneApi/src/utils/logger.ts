@@ -23,7 +23,7 @@ const consoleFormat = winston.format.combine(
 
 // 创建logger实例
 export const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || 'debug',
   format: logFormat,
   transports: [
     // 控制台输出

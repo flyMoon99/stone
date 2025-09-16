@@ -32,12 +32,12 @@ router.put('/admins/:id', superAdminAuth, updateAdminController)
 router.patch('/admins/batch-status', superAdminAuth, batchUpdateAdminStatusController)
 
 // 会员管理路由（需要管理员权限）
-router.post('/members', adminAuthWithPermissions, requirePermissions(['user.create']), createMemberController)
-router.get('/members', adminAuthWithPermissions, requirePermissions(['user.list']), getMemberListController)
-router.get('/members/search', adminAuthWithPermissions, requirePermissions(['user.list']), searchMembersController)
-router.get('/members/:id', adminAuthWithPermissions, requirePermissions(['user.list']), getMemberByIdController)
-router.put('/members/:id', adminAuthWithPermissions, requirePermissions(['user.update']), updateMemberController)
+router.post('/members', adminAuthWithPermissions, requirePermissions(['member.create']), createMemberController)
+router.get('/members', adminAuthWithPermissions, requirePermissions(['member.list']), getMemberListController)
+router.get('/members/search', adminAuthWithPermissions, requirePermissions(['member.list']), searchMembersController)
+router.get('/members/:id', adminAuthWithPermissions, requirePermissions(['member.list']), getMemberByIdController)
+router.put('/members/:id', adminAuthWithPermissions, requirePermissions(['member.update']), updateMemberController)
 
-router.patch('/members/batch-status', adminAuthWithPermissions, requirePermissions(['user.update']), batchUpdateMemberStatusController)
+router.patch('/members/batch-status', adminAuthWithPermissions, requirePermissions(['member.update']), batchUpdateMemberStatusController)
 
 export default router

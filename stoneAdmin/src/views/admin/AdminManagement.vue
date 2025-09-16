@@ -50,19 +50,25 @@
         <div class="table-header">
           <span>管理员列表</span>
           <div class="table-actions">
-            <n-button type="primary" @click="handleCreate">
+            <n-button 
+              v-permission="PERMISSIONS.ADMIN.CREATE"
+              type="primary" 
+              @click="handleCreate"
+            >
               <n-icon :size="16" class="mr-1">
                 <PersonAddOutline />
               </n-icon>
               添加管理员
             </n-button>
             <n-button 
+              v-permission="PERMISSIONS.ADMIN.BATCH_UPDATE"
               :disabled="!selectedRowKeys.length"
               @click="handleBatchStatusUpdate('ACTIVE')"
             >
               批量启用
             </n-button>
             <n-button 
+              v-permission="PERMISSIONS.ADMIN.BATCH_UPDATE"
               :disabled="!selectedRowKeys.length"
               @click="handleBatchStatusUpdate('INACTIVE')"
             >
@@ -166,9 +172,12 @@ import {
   updateAdmin, 
   batchUpdateAdminStatus 
 } from '@/utils/api'
+import { usePermissionStore } from '@/stores/permission'
+import { PERMISSIONS } from '@/utils/permission'
 
 const message = useMessage()
 const dialog = useDialog()
+const permissionStore = usePermissionStore()
 
 // 响应式数据
 const loading = ref(false)
@@ -295,19 +304,43 @@ const columns: DataTableColumns<Admin> = [
     key: 'actions',
     width: 150,
     render: (row) => {
-      return [
-        h(
-          NButton,
-          {
-            size: 'small',
-            type: 'primary',
-            ghost: true,
-            onClick: () => handleEdit(row)
-          },
-          { default: () => '编辑', icon: () => h(CreateOutline) }
+      const buttons = []
+      
+      // 编辑按钮 - 需要 admin.update 权限
+      if (permissionStore.hasPermission(PERMISSIONS.ADMIN.UPDATE)) {
+        buttons.push(
+          h(
+            NButton,
+            {
+              size: 'small',
+              type: 'primary',
+              ghost: true,
+              onClick: () => handleEdit(row),
+              style: { marginRight: '8px' }
+            },
+            { default: () => '编辑', icon: () => h(CreateOutline) }
+          )
         )
+      }
+      
+      // TODO: 添加删除功能
+      // 删除按钮 - 需要 admin.delete 权限
+      // if (permissionStore.hasPermission(PERMISSIONS.ADMIN.DELETE)) {
+      //   buttons.push(
+      //     h(
+      //       NButton,
+      //       {
+      //         size: 'small',
+      //         type: 'error',
+      //         ghost: true,
+      //         onClick: () => handleDelete(row)
+      //       },
+      //       { default: () => '删除' }
+      //     )
+      //   )
+      // }
 
-      ]
+      return buttons
     }
   }
 ]

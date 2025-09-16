@@ -78,8 +78,8 @@ const menuOptions = computed(() => {
   // 动态生成用户管理菜单
   const userManagementChildren = []
   
-  // 管理员管理 - 只有超级管理员可见
-  if (authStore.isSuperAdmin) {
+  // 管理员管理 - 检查管理员管理权限
+  if (authStore.isSuperAdmin || permissionStore.hasMenuPermission('admin')) {
     userManagementChildren.push({
       label: '管理员管理',
       key: '/admin/admins',
@@ -87,8 +87,8 @@ const menuOptions = computed(() => {
     })
   }
   
-  // 会员管理 - 检查会员管理权限和角色
-  if (authStore.isSuperAdmin || (permissionStore.hasMenuPermission('member') && permissionStore.roles.length > 0)) {
+  // 会员管理 - 检查会员管理权限
+  if (authStore.isSuperAdmin || permissionStore.hasMenuPermission('member')) {
     userManagementChildren.push({
       label: '会员管理',
       key: '/admin/members',
@@ -96,8 +96,8 @@ const menuOptions = computed(() => {
     })
   }
   
-  // 角色管理 - 检查角色管理权限和角色
-  if (authStore.isSuperAdmin || (permissionStore.hasMenuPermission('role') && permissionStore.roles.length > 0)) {
+  // 角色管理 - 检查角色管理权限
+  if (authStore.isSuperAdmin || permissionStore.hasMenuPermission('role')) {
     userManagementChildren.push({
       label: '角色管理',
       key: '/admin/roles',
@@ -105,8 +105,8 @@ const menuOptions = computed(() => {
     })
   }
   
-  // 权限管理 - 只有超级管理员可见
-  if (authStore.isSuperAdmin) {
+  // 权限管理 - 检查权限管理权限
+  if (authStore.isSuperAdmin || permissionStore.hasMenuPermission('permission')) {
     userManagementChildren.push({
       label: '权限管理',
       key: '/admin/permissions',
@@ -114,8 +114,8 @@ const menuOptions = computed(() => {
     })
   }
   
-  // 用户权限分配 - 只有超级管理员可见
-  if (authStore.isSuperAdmin) {
+  // 用户权限分配 - 检查用户权限分配权限
+  if (authStore.isSuperAdmin || permissionStore.hasMenuPermission('user-permission')) {
     userManagementChildren.push({
       label: '用户权限分配',
       key: '/admin/user-permissions',

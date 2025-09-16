@@ -361,8 +361,10 @@ export const getUserPermissions = async (userId: string, forceRefresh = false): 
   return response.data
 }
 
-export const getUserMenuPermissions = async (userId: string): Promise<ApiResponse> => {
-  const response = await api.get(`/rbac/users/${userId}/menu-permissions`)
+export const getUserMenuPermissions = async (userId: string, forceRefresh = false): Promise<ApiResponse> => {
+  // 添加时间戳参数来强制刷新，避免浏览器缓存
+  const timestamp = forceRefresh ? `?_t=${Date.now()}` : ''
+  const response = await api.get(`/rbac/users/${userId}/menu-permissions${timestamp}`)
   return response.data
 }
 

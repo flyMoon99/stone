@@ -54,7 +54,7 @@ const routes = [
         meta: {
           title: '管理员管理',
           requiresAuth: true,
-          requiresSuperAdmin: true,
+          requiresPermission: 'admin.list', // 需要管理员列表权限
           keepAlive: true
         }
       },
@@ -89,7 +89,7 @@ const routes = [
         meta: {
           title: '权限管理',
           requiresAuth: true,
-          requiresSuperAdmin: true,
+          requiresPermission: 'permission.list', // 需要权限列表权限
           keepAlive: true
         }
       },
@@ -101,7 +101,7 @@ const routes = [
         meta: {
           title: '用户权限分配',
           requiresAuth: true,
-          requiresSuperAdmin: true,
+          requiresPermission: 'user-permission.list', // 需要用户权限列表权限
           keepAlive: true
         }
       }

@@ -192,15 +192,6 @@ export async function getUserPermissions(userId: string): Promise<UserPermission
     enabled: p.enabled
   }))
 
-  // 调试日志：检查权限数据的完整性
-  logger.debug(`[getUserPermissions] User: ${userWithRolesAndPermissions.account} (${userId})`)
-  logger.debug(`[getUserPermissions] Total permissions: ${permissions.length}`)
-  logger.debug(`[getUserPermissions] Permissions with parentId: ${permissions.filter(p => p.parentId).length}`)
-  
-  // 详细记录每个权限的信息
-  permissions.forEach((p, index) => {
-    logger.debug(`[getUserPermissions] ${index + 1}. ${p.name} (${p.key}) - Parent: ${p.parentId || 'None'} - Type: ${p.type}`)
-  })
 
   const permissionKeys = permissions.map(p => p.key)
 
@@ -300,10 +291,8 @@ export async function getUserMenuPermissions(userId: string) {
       if (parent) {
         // 父权限存在，添加到父权限的children中
         parent.children.push(node)
-        logger.debug(`Menu permission: ${permission.name} -> Parent: ${parent.name}`)
       } else {
         // 父权限不存在于当前用户权限列表中，作为孤立权限处理
-        logger.warn(`Menu permission ${permission.name} (${permission.id}) has missing parent ${permission.parentId}`)
         node.isOrphaned = true
         orphanedPermissions.push(node)
       }
@@ -336,7 +325,6 @@ export async function getUserMenuPermissions(userId: string) {
   }
 
   const result = sortChildren(rootPermissions)
-  logger.debug(`Built menu permission tree with ${result.length} root permissions`)
   
   return result
 }

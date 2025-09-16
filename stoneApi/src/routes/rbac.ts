@@ -180,7 +180,7 @@ router.post('/users/:id/roles',
 
 router.get('/users/:id/roles', 
   adminAuthWithPermissions, 
-  requirePermissions(['user.list']), 
+  // 移除权限要求，允许已认证管理员查看用户角色
   getUserRolesController
 )
 
@@ -199,32 +199,32 @@ router.delete('/users/:id/roles/:roleId',
 // 用户权限查询
 router.get('/users/:id/permissions', 
   adminAuthWithPermissions, 
-  requirePermissions(['user.list']), 
+  // 移除权限要求，允许已认证管理员查看用户权限
   getUserPermissionsController
 )
 
 router.get('/users/:id/menu-permissions', 
-  adminAuthWithPermissions, 
-  requirePermissions(['user.list']), 
+  adminAuthWithPermissions,
+  // 移除权限要求，允许已认证用户查看菜单权限
   getUserMenuPermissionsController
 )
 
 // 权限检查
-router.post('/users/:id/check-permission', 
+router.post('/users/:id/check-permission',
   adminAuthWithPermissions, 
-  requirePermissions(['user.list']), 
+  // 移除权限要求，允许已认证管理员检查权限
   checkUserPermissionController
 )
 
 router.post('/users/:id/check-any-permission', 
-  adminAuthWithPermissions, 
-  requirePermissions(['user.list']), 
+  adminAuthWithPermissions,
+  // 移除权限要求，允许已认证管理员检查权限
   checkUserAnyPermissionController
 )
 
 router.post('/users/:id/check-all-permissions', 
-  adminAuthWithPermissions, 
-  requirePermissions(['user.list']), 
+  adminAuthWithPermissions,
+  // 移除权限要求，允许已认证管理员检查权限
   checkUserAllPermissionsController
 )
 
@@ -238,13 +238,13 @@ router.post('/users/batch-assign-roles',
 // 反向查询
 router.get('/permissions/:permissionKey/users', 
   adminAuthWithPermissions, 
-  requirePermissions(['user.list']), 
+  requirePermissions(['member.list']), 
   getUsersByPermissionController
 )
 
 router.get('/roles/:roleCode/users', 
   adminAuthWithPermissions, 
-  requirePermissions(['user.list']), 
+  requirePermissions(['member.list']), 
   getUsersByRoleController
 )
 
@@ -272,7 +272,7 @@ router.get('/example/role-check',
 router.get('/example/complex-permission', 
   adminAuthWithPermissions,
   requirePermission({
-    permissions: ['user.create', 'user.update'],
+    permissions: ['member.create', 'member.update'],
     mode: 'any'
   }),
   (req, res) => {

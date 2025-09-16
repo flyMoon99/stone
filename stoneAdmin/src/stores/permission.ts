@@ -63,10 +63,10 @@ export const usePermissionStore = defineStore('permission', () => {
     try {
       isLoading.value = true
       
-      // 并行获取用户权限和菜单权限
+      // 并行获取用户权限和菜单权限，强制刷新避免缓存
       const [permissionsResponse, menuResponse] = await Promise.all([
-        getUserPermissions(authStore.user.id),
-        getUserMenuPermissions(authStore.user.id)
+        getUserPermissions(authStore.user.id, true),
+        getUserMenuPermissions(authStore.user.id, true)
       ])
 
       if (permissionsResponse.success) {
