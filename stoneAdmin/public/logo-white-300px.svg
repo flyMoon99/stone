@@ -1,0 +1,90 @@
+<svg width="300" height="120" viewBox="0 0 300 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="300" height="300" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        
+      <!-- 背景圆形 -->
+      <circle
+        cx="60"
+        cy="60"
+        r="58"
+        fill="url(#backgroundGradientWhite)"
+        stroke="#D1D5DB"
+        stroke-width="2"
+      />
+      
+      <!-- 主要石头 - 简洁的单块设计 -->
+      <path
+        d="M30 80 L35 35 L50 30 L70 30 L85 35 L90 80 L85 85 L75 90 L45 90 L35 85 Z"
+        fill="url(#mainStoneGradientWhite)"
+        stroke="#9CA3AF"
+        stroke-width="2"
+        stroke-linejoin="round"
+      />
+      
+      <!-- 左侧面 - 立体效果 -->
+      <path
+        d="M30 80 L35 35 L50 30 L45 75 L35 85 Z"
+        fill="url(#leftFaceGradientWhite)"
+        stroke="#9CA3AF"
+        stroke-width="1.5"
+        stroke-linejoin="round"
+      />
+      
+      <!-- 顶部面 - 立体效果 -->
+      <path
+        d="M35 35 L50 30 L70 30 L85 35 L75 40 L45 40 Z"
+        fill="url(#topFaceGradientWhite)"
+        stroke="#9CA3AF"
+        stroke-width="1.5"
+        stroke-linejoin="round"
+      />
+      
+      <!-- 高光效果 -->
+      <path
+        d="M40 45 L50 40 L65 40 L70 45"
+        stroke="#FFFFFF"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        opacity="0.9"
+      />
+      <path
+        d="M38 50 L42 46"
+        stroke="#FFFFFF"
+        stroke-width="2"
+        stroke-linecap="round"
+        opacity="0.7"
+      />
+      
+      <!-- 阴影细节 -->
+      <path
+        d="M75 85 L85 80 L85 85 L75 90"
+        fill="#6B7280"
+        opacity="0.4"
+      />
+      
+      <!-- 渐变定义 -->
+      <defs>
+        <radialGradient id="backgroundGradientWhite" cx="0.3" cy="0.3" r="1">
+          <stop offset="0%" stop-color="#F1F5F9" />
+          <stop offset="100%" stop-color="#CBD5E1" />
+        </radialGradient>
+        
+        <linearGradient id="mainStoneGradientWhite" x1="0.2" y1="0.2" x2="0.8" y2="0.9">
+          <stop offset="0%" stop-color="#E2E8F0" />
+          <stop offset="40%" stop-color="#CBD5E1" />
+          <stop offset="100%" stop-color="#94A3B8" />
+        </linearGradient>
+        
+        <linearGradient id="leftFaceGradientWhite" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#CBD5E1" />
+          <stop offset="100%" stop-color="#94A3B8" />
+        </linearGradient>
+        
+        <linearGradient id="topFaceGradientWhite" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#F1F5F9" />
+          <stop offset="50%" stop-color="#E2E8F0" />
+          <stop offset="100%" stop-color="#CBD5E1" />
+        </linearGradient>
+      </defs>
+      </svg>
+      <text x="140" y="45" font-family="Arial, sans-serif" font-size="24" font-weight="600" fill="#F1F5F9">基石项目</text>
+      <text x="140" y="70" font-family="Arial, sans-serif" font-size="12" font-weight="400" fill="#CBD5E1" letter-spacing="2px">CORNERSTONE</text></svg>
