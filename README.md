@@ -91,3 +91,8 @@ Apache-2.0 License
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request 来改进项目。
+
+--项目分支--
+main-是最简单的前后台系统
+roles-是角色功能的分支
+baseInfo-是准备做企业的基础信息的分支
