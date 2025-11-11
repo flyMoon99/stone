@@ -190,9 +190,21 @@ onMounted(() => {
   margin-left: 0 !important;
 }
 
-/* 移除顶级子菜单容器自身的左侧内边距，避免整行被右移 */
+/* 关键修复：重置顶级 n-submenu 容器的所有左侧间距 */
 :deep(.n-menu > .n-submenu) {
   padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* 重置 n-submenu 的所有内部包装元素的左侧间距 */
+:deep(.n-menu .n-submenu) {
+  padding-left: 0 !important;
+}
+
+/* 确保 submenu 的子元素容器也没有额外的左侧间距 */
+:deep(.n-submenu .n-submenu-children) {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
 }
 
 /* 统一所有菜单项内容的左侧缩进（顶级项） */
